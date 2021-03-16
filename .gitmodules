@@ -1,0 +1,3 @@
+[submodule "ext/neuralEntropy"]
+	path = ext/neuralEntropy
+	url = https://github.com/ScSteffen/neuralEntropy.git
