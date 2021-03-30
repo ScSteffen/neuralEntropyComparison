@@ -130,6 +130,7 @@ class M2ConvexNet(tf.keras.Model):
         return alpha0_pred 
     
     #Define moment reconstruction function 
+
     def moment_func(self,alpha,tol = 1e-8):
         
         #Check the predicted alphas for +/- infinity or nan - raise error if found

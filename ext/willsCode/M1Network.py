@@ -82,9 +82,7 @@ class M1ConvexNN(tf.keras.Model):
         #Define the input layer, hidden layers, and output layer
         
         """
-        
-        
-        
+
         #Define the input layer, hidden layers, and output layer
         self.input_layer = Dense(nNode, use_bias = True,kernel_initializer =\
                   initializers.RandomNormal(mean = 0.,stddev = self.input_stddev),\
