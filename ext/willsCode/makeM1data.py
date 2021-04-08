@@ -8,15 +8,19 @@ Created on Fri Nov  6 11:32:57 2020
 
 import numpy as np 
 #from MN_Duality_Tools import Entropy, moment_vector
-#import pickle 
+import pickle 
 import pandas as pd
 from tabulate import tabulate
 from fobj import alpha0surface
 import pickle 
 import os 
 
+
+pd.set_option('display.float_format', '{:.2e}'.format)
+
 #dualfixedpoly1Q_opts is the optimization which solves for \hat{\alpha}(u)
 #from dual objective function 
+
 #from dualfixedpoly1Q_opts import dualfixedpoly1Q_opts
 #from optstuffset import optstuffset
 #from getquad import getquad 
@@ -80,18 +84,23 @@ if __name__ == "__main__":
     
     mode = 'Train'
     
-    #The filepath for the datafile, and the 'tablefile' (we save a small table to summarize)
-    #the data instead of a pandas header & dataframe. This avoids extra value of dataframe. 
-    datafile_name = 'M1'+mode+'Data'+saveid
-    tablefile_name = 'M1'+mode+'DataTable'+saveid
+    #Any way to store this data in a list or group together, and not in separate .csv? Or should it be separate csv?
     
+     #Use os.path to get your parent_dir and the data folder in an OS-free way
+    alpha_filename = 'M1' + mode+'Data'+saveid  + '_gradient.csv'
+    entropy_filename = 'M1'+mode+'Data'+saveid + '_entropy.csv'
+    moment_filename = 'M1'+mode + 'Data'+saveid + '_moment.csv'
+    table_filename = 'M1'+mode+'DataTable'+saveid  + '.pickle'
+
+    #Use os.path to get your parent_dir and the data folder in an OS-free way
     parent_dir = os.path.abspath('../..')
-    #parent_dir = os.path.dirname(os.path.dirname(__file__))
+    data_folder = os.path.join(parent_dir,'data')
     
-    datafile = parent_dir + '\\data\\'+datafile_name
-    tablefile = parent_dir + '\\data\\'+tablefile_name
-    #datafile_base = os.path.abspath('../data/'+datafile_base)
-    #tablefile = os.path.abspath('../data/'+tablefile)
+    alpha_datafile = os.path.join(data_folder,alpha_filename)
+    entropy_datafile = os.path.join(data_folder,entropy_filename)
+    moment_datafile = os.path.join(data_folder,moment_filename)
+    table_file= os.path.join(data_folder,table_filename)
+    
     
     if mode == 'Train':
         
@@ -199,13 +208,15 @@ if __name__ == "__main__":
         if savedata == True:
             #Add file extensions for separate data files after determining path and filename 
             
-            np.savetxt(datafile+'_alpha.csv',alpha_data, delimiter = ',')
-            np.savetxt(datafile+'_moment.csv',moment_data, delimiter = ',')
-            np.savetxt(datafile+'_entropy.csv',entropy_data, delimiter = ',')
-            with open(tablefile+'.pickle','wb') as tablefile_handle:
-                pickle.dump(domain_table,tablefile_handle)
+            np.savetxt(alpha_datafile,alpha_data, delimiter = ',')
+            np.savetxt(moment_datafile,moment_data, delimiter = ',')
+            np.savetxt(entropy_datafile,entropy_data, delimiter = ',')
+            with open(table_file,'wb') as handle:
+                pickle.dump(domain_table,handle)
             
             """
+            #Previous way I did this on my device using .pickle files. Inefficient probably.
+                
             with open(datafile + '.pickle','wb') as file_handle:
                 pickle.dump(datalist,file_handle)
             with open(tablefile + '.pickle','wb') as tablefile_handle:
@@ -247,11 +258,11 @@ if __name__ == "__main__":
         
         if savedata == True:
             
-            np.savetxt(datafile+'_alpha.csv',alpha_data, delimiter = ',')
-            np.savetxt(datafile+'_moment.csv',moment_data, delimiter = ',')
-            np.savetxt(datafile+'_entropy.csv',entropy_data, delimiter = ',')
-            with open(tablefile+'.pickle','wb') as tablefile_handle:
-                pickle.dump(domain_table,tablefile_handle)
+            np.savetxt(alpha_datafile,alpha_data, delimiter = ',')
+            np.savetxt(moment_datafile,moment_data, delimiter = ',')
+            np.savetxt(entropy_datafile,entropy_data, delimiter = ',')
+            with open(table_file,'wb') as handle:
+                pickle.dump(domain_table,handle)
             
             """
             with open(datafile + '.pickle','wb') as file_handle:
@@ -312,11 +323,11 @@ if __name__ == "__main__":
         
         if savedata == True:
             
-            np.savetxt(datafile+'_alpha.csv',alpha_data, delimiter = ',')
-            np.savetxt(datafile+'_moment.csv',moment_data, delimiter = ',')
-            np.savetxt(datafile+'_entropy.csv',entropy_data, delimiter = ',')
-            with open(tablefile+'.pickle','wb') as tablefile_handle:
-                pickle.dump(domain_table,tablefile_handle)
+            np.savetxt(alpha_datafile,alpha_data, delimiter = ',')
+            np.savetxt(moment_datafile,moment_data, delimiter = ',')
+            np.savetxt(entropy_datafile,entropy_data, delimiter = ',')
+            with open(table_file,'wb') as handle:
+                pickle.dump(domain_table,handle)
             
             """
             with open(datafile + '.pickle','wb') as file_handle:
