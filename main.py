@@ -27,6 +27,8 @@ def main():
                       help="author of the network", metavar="AUTHOR")
     parser.add_option("-b", "--bracket", dest="bracket", default=1,
                       help="size bracket of network parameters", metavar="BRACKET")
+    parser.add_option("-d", "--dimension", dest="dimension", default=1,
+                      help="dimension of the closure (length of the moment vector)", metavar="BRACKET")
     parser.add_option("-t", "--train", dest="train", default=False,
                       help="train the models", metavar="TRAIN")
     parser.add_option("-e", "--evalutation", dest="evaluation", default=True,
@@ -49,18 +51,18 @@ def main():
     # Depending on the size bracket, each network needs to adapt its width and depth (to get the corr. number of trainable parameters)
     trainableParamBracket = int(options.bracket)
     losses = int(options.losses) # [mse(h), mse(alpha), mse(u), mse(flux)]
-
+    inputDim = int(options.dimension)
 
     modelList = [] # list of models
     if(options.author == "steffen" or options.author == "s" or options.author == "Steffen"):
         authorNum = 0
-        modelList.append(modelFrame(architecure = 0, trainableParamBracket = trainableParamBracket, model_losses = losses))
+        modelList.append(modelFrame(architecure = 0, trainableParamBracket = trainableParamBracket, model_losses = losses, inputDim = inputDim))
     elif( options.author == "will" or options.author == "w" or options.author == "Will"):
         authorNum = 1
-        modelList.append(modelFrame(architecure = 1,trainableParamBracket = trainableParamBracket, model_losses = losses))
+        modelList.append(modelFrame(architecure = 1,trainableParamBracket = trainableParamBracket, model_losses = losses, inputDim = inputDim))
     else: # default: Choose both
-        modelList.append(modelFrame(architecure = 0,trainableParamBracket = trainableParamBracket, model_losses = losses))
-        modelList.append(modelFrame(architecure = 1,trainableParamBracket = trainableParamBracket, model_losses = losses))
+        modelList.append(modelFrame(architecure = 0,trainableParamBracket = trainableParamBracket, model_losses = losses, inputDim = inputDim))
+        modelList.append(modelFrame(architecure = 1,trainableParamBracket = trainableParamBracket, model_losses = losses, inputDim = inputDim))
 
     print("---- Load the model weights, if flag is set ----")
     if(options.load):

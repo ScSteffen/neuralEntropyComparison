@@ -13,17 +13,17 @@ from EcnnClosure import createEcnnClosure
 
 class ModelFrame:
 
-    def __init__(self, author = 0, trainableParamBracket = 1, model_losses = 0):
+    def __init__(self, author = 0, trainableParamBracket = 1, model_losses = 0, inputDim = 1):
         """constructor"""
 
         self.saveFolder = "models/bracket_"+str(trainableParamBracket)+"/losscombi_"+str(model_losses)
         if (author == 0): # Steffen (synonymous with modelchoice) ==> ICNN
             self.saveFolder  = self.saveFolder + "/icnn"
-            self.model = createIcnnClosure(trainableParamBracket,model_losses) # @Steffen: Model creation Function here
+            self.model = createIcnnClosure(inputDim,trainableParamBracket,model_losses) # @Steffen: Model creation Function here
 
         else:   # ==> WILL
             self.saveFolder = self.saveFolder + "/ecnn"
-            self.model = createEcnnClosure(trainableParamBracket,model_losses) # @Will: Model creation Function here
+            self.model = createEcnnClosure(inputDim,trainableParamBracket,model_losses) # @Will: Model creation Function here
 
     def showModel(self):
         self.model.summary()
