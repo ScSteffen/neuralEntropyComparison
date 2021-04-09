@@ -5,6 +5,6 @@ Date: 9.04.2021
 """
 
 
-def createIcnnClosure(self):
+def createIcnnClosure(trainableParamBracket,model_losses):
 
     return model

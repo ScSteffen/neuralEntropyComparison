@@ -3,5 +3,5 @@ WILLS MODEL GOES HERE
 """
 
 
-def createEcnnClosure(self):
+def createEcnnClosure(trainableParamBracket,model_losses):
     return model
