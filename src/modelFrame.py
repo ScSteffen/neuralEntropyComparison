@@ -21,7 +21,7 @@ class ModelFrame:
             self.saveFolder  = self.saveFolder + "/icnn"
             self.model = createIcnnClosure(inputDim,trainableParamBracket,model_losses) # @Steffen: Model creation Function here
 
-        else:   # ==> WILL
+        else:   # Will: (model choice is ECNN)
             self.saveFolder = self.saveFolder + "/ecnn"
             self.model = createEcnnClosure(inputDim,trainableParamBracket,model_losses) # @Will: Model creation Function here
 
@@ -34,6 +34,15 @@ class ModelFrame:
         self.model.load_weights(usedFileName)
         print("Model loaded from file ")
         return 0
+    
+    def loadData(self):
+        """
+        Since training depends on shape of data, and model type, 
+        we should assign our 'training data' and 'test data'
+        as data attributes of our model "Frame"
+        """
+        
+        
 
     def trainingProcedure(self):
         ### TODO
@@ -41,6 +50,7 @@ class ModelFrame:
         return 0
 
     def errorAnalysis(self ):
+        
         # TODO
         #@WIll
         return 0

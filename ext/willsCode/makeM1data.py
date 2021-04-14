@@ -14,6 +14,7 @@ from tabulate import tabulate
 from fobj import alpha0surface
 import pickle 
 import os 
+from DualityTools import DualityTools 
 
 
 pd.set_option('display.float_format', '{:.2e}'.format)
@@ -25,40 +26,137 @@ pd.set_option('display.float_format', '{:.2e}'.format)
 #from optstuffset import optstuffset
 #from getquad import getquad 
 
-def moment_vector(a,tol = 1e-10):
-    """
-    Call:
-           momentmapvec
-           
-    Return: 
-            u
+class make_MN_data:
     
-    Input: 
-           a: vector of moment multiplier variable, alpha - np.ndarray of shape (2,)
-    Output: 
-            u: moment vector associated to multipliers a_0 and a_1 by the MN closure map, computed via analytic formula (not quadrature) - np.ndarray of shape (2,)
-    """
-    if abs(a[1]) < tol:
-        u_0 = 2*np.exp(a[0])
-        u_1 = 0
-    else:
-        u_0 = 2*np.exp(a[0])*(np.sinh(a[1])/a[1])
-        u_1 = 2*np.exp(a[0])*((a[1]*np.cosh(a[1]))-np.sinh(a[1]))/(a[1]**2)
-    return np.array([u_0,u_1])
+    def moment_vector(a,tol = 1e-10):
+        """
 
-def Entropy(a,tol = 1e-10):
-    if len(a.shape) > 1:
-        a_0,a_1 = a[:,0],a[:,1]
-        inside = abs(a_1) < tol
-        outside = 1-inside
-        return inside*(2*(a_0-1)*np.exp(a_0)) + outside*(2*np.exp(a_0))*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
-    else:
-        a_0,a_1 = a[0],a[1]
-        if abs(a_1) < tol:
-            return 2*(a_0-1)*np.exp(a_0)
+        Input: 
+               a: vector of moment multiplier variable, alpha - np.ndarray of shape (2,)
+        Output: 
+                u: moment vector associated to multipliers a_0 and a_1 by the MN closure map, computed via analytic formula (not quadrature) - np.ndarray of shape (2,)
+        """
+        if abs(a[1]) < tol:
+            u_0 = 2*np.exp(a[0])
+            u_1 = 0
         else:
-            return 2*np.exp(a_0)*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
+            u_0 = 2*np.exp(a[0])*(np.sinh(a[1])/a[1])
+            u_1 = 2*np.exp(a[0])*((a[1]*np.cosh(a[1]))-np.sinh(a[1]))/(a[1]**2)
+        return np.array([u_0,u_1])
+    
+    def entropy(a,tol = 1e-10):
+        if len(a.shape) > 1:
+            a_0,a_1 = a[:,0],a[:,1]
+            inside = abs(a_1) < tol
+            outside = 1-inside
+            return inside*(2*(a_0-1)*np.exp(a_0)) + outside*(2*np.exp(a_0))*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
+        else:
+            a_0,a_1 = a[0],a[1]
+            if abs(a_1) < tol:
+                return 2*(a_0-1)*np.exp(a_0)
+            else:
+                return 2*np.exp(a_0)*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
+    
+    def __init__(self,N,Quad = None,savedata = False):
+        #Create emtpy containers for the data we will make. Starting with lists. 
+        #We will vectorize operations and do in numpy later. 
         
+        #getDualityTools needs to be build 
+        
+        self.N = N
+        self.Quad = Quad
+        
+        self.dualityTools = getDualityTools(N,Quad)
+            
+        pass
+        
+    def make_trainData(self,trainParams,N = self.N):
+        
+        alpha_list = []
+        entropy_list = []
+        moment_list = []
+        
+        if N ==1:
+            
+            #UnPack the Training Pararmeters 
+            self.train_N, self.train_alpha1_min, self.train_alpha1_max = trainParams
+            
+            #Make uniform domain to sample over 
+            self.alpha1_mesh = np.random.uniform(self.train_alpha1_min,self.train_alpha1_max,self.train_N)
+            
+            for i in range(self.train_N):
+                #Draft in loop format and vectorize later 
+                alpha1 = self.alpha1_meshalpha1_mesh[i]
+                
+                alpha0 = self.dualityTools.alpha0surface(alpha1,1)
+                
+                alpha_point = np.array([alpha0,alpha1])
+                
+                alpha_list.append([alpha0,alpha1])
+                
+                moment_point = self.moment_vector(alpha_point)
+                
+                moment_list.append([moment_point[0],moment_point[1]])
+                
+                entropy_list.append([self.entropy(alpha_point)])
+                
+            alpha_data  = np.array(alpha_list,    dtype = float)
+            moment_data = np.array(moment_list,   dtype= float)
+            entropy_data = np.array(entropy_list, dtype =float)
+                
+        elif N  > 1:
+            
+            pass 
+        
+    def make_testData(self,testParams,N = self.N):
+        
+        alpha_list = []
+        entropy_list = []
+        moment_list = []
+        
+        if N == 1:
+            
+            self.test_N_alpha1, self.test_alpha1_min, self.test_alpha1_max = testParams[0]
+            self.test_N_u0, self.test_u0_min, self.test_alpha1_max = testParams[1]
+            
+            for i in range(N_alpha1):
+                #For each value of alpha_1, alpha_0 is monotonically increasing in u_0. 
+                #This can be seen from the N = 1,d = 1 elementary expression for the reconstruction map
+                
+                alpha0 = self.dualityTools.alpha0surface(alpha1_mesh[i],1)
+                
+                alpha_projected = np.array([alpha0,alpha1_mesh[i]],dtype = float)
+                
+                u0_scale_add = np.array([0,0],dtype = float)
+                
+                #Print i just to give us a picture of how far along a large iteration is
+                if (i % 100) == 0:
+                    print('\n Make 2d Test Has Elapsed', i)
+                
+                for j in range(N_u0):
+                    
+                    u0_scale_add[0] = np.log(u0_vals[j])
+                    
+                    alpha_scaledup = alpha_projected + u0_scale_add
+                    
+                    alpha_list.append([alpha_scaledup[0],alpha_scaledup[1]])
+                    
+                    moment_scaledup = self.moment_vector(alpha_scaledup)
+                    
+                    moment_list.append([moment_scaledup[0],moment_scaledup[1]])
+                    
+                    entropy_list.append(self.entropy(alpha_scaledup))
+                    
+            alpha_data  = np.array(alpha_list,    dtype = float)
+            moment_data = np.array(moment_list,   dtype= float)
+            entropy_data = np.array(entropy_list, dtype =float)
+        
+                    
+        elif N > 1:
+            
+            
+            pass
+
 
 #Determine whether or not to save data to filepath 
 if __name__ == "__main__":

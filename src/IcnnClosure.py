@@ -41,6 +41,10 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
     initializer = tf.keras.initializers.RandomUniform(minval=-0.5, maxval=0.5, seed=None)
 
     def convexLayer(layerInput_z: Tensor, netInput_x: Tensor, layerIdx=0) -> Tensor:
+        """
+        WAP 14/4/21: Is this python? I've never used  : for binding variable type to argument
+        or -> assignment opearator. These Cpp shortcuts work?
+        """
         # Weighted sum of previous layers output plus bias
         weightedNonNegSum_z = keras.layers.Dense(layerDim, kernel_constraint=keras.constraints.NonNeg(), activation=None,
                                            kernel_initializer=initializerNonNeg,
@@ -61,6 +65,8 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
         # out = layers.BatchNormalization(name='bn_' + str(layerIdx))(out)
         return out
 
+    #WAP 14/4/21: Is this python? I've never used  : for binding variable type to argument
+    # or -> assignment opearator 
     def convexLayerOutput(layerInput_z: Tensor, netInput_x: Tensor) -> Tensor:
         # Weighted sum of previous layers output plus bias
         weightedNonNegSum_z = keras.layers.layers.Dense(1, kernel_constraint=keras.constraints.NonNeg(), activation=None,
