@@ -98,7 +98,8 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
 
     ### Build the model wrapper
     model = sobolevModel(coreModel, name="sobolev_icnn_wrapper")
-    model.build(input_shape=(self.inputDim,))
+    batchSize = 2  # dummy entry
+    model.build(input_shape=(batchSize, inputDim))
     model.compile(
         loss={'output_1': tf.keras.losses.MeanSquaredError(), 'output_2': tf.keras.losses.MeanSquaredError()},
         loss_weights={'output_1': 1, 'output_2': 1},
