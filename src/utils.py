@@ -18,70 +18,93 @@ class dualityTools:
         self.q = quad
         self.closure = Closure
     
-    def entropy_quad(self,alpha):
+    def entropy(self,alpha,tol = 1e-10):
         """
         Want to handle vectorized input for alpha
         in the shape
         (n_vals,len_alpha)
         """
-        m_v = self.q.p 
-        
-        G_alpha = np.exp(np.dot(alpha,m_v))
-        etaOfG = np.multiply(G_alpha,np.dot(alpha,m_v))
-        
-        integral_etaOfG = np.dot(etaOfG,self.q.w)
-        
-        """
-        #Code for a non-vectorized version 
-        m_v = q.p.T
-        
-        G_alpha = np.exp(np.dot(m_v,alpha))
-        
-        EtaofG = np.multiply(np.dot(m_v,alpha)-1,G_alpha)
-        
-        integral_EtaofG = np.dot(q.w.T,EtaofG)
-        
-        return integral_EtaofG
-        """
-        
-        return integral_etaOfG
-    
-    def momentvector_quad(self,alpha):
-        """
-        Want to handle vectorized input for alpha
-        in the shape
-        (n_vals,len_alpha)
-        """
-        m_v = self.q.p
-        #m_v.shape = (N+1,n_v) 
-        #where n_v is numquadpts
-        
-        G_alpha = np.exp(np.dot(alpha,m_v)) 
-        #G_alpha.shape = (n_x,n_v)
-        
-        moment_set = []
-        for k in range(self.N+1):
-            mG = np.multiply(G_alpha,m_v[k,:])
-            #Take integral via dotting with quadrature weights. 
-            #this is the same as integral mG.
+        if self.N == 1:
+            if len(alpha.shape) > 1:
+                a_0,a_1 = alpha[:,0],alpha[:,1]
+                inside = abs(a_1) < tol
+                outside = 1-inside
+                return inside*(2*(a_0-1)*np.exp(a_0)) + outside*(2*np.exp(a_0))*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
+            else:
+                a_0,a_1 = alpha[0],alpha[1]
+                if abs(a_1) < tol:
+                    return 2*(a_0-1)*np.exp(a_0)
+                else:
+                    return 2*np.exp(a_0)*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
+                
+        elif self.N >= 1:
+       
+            m_v = self.q.p 
             
-            moment_set.append(np.dot(mG,self.q.w))
-        
-        moments_out = np.hstack([x[:,np.newaxis] for x in moment_set])
-        #Moments_out shape is: (n_x,N+1)
-        
-        """
-        #Code for a non-vectorized version
-        m_v = q.p.T
-        
-        G_alpha = np.exp(np.dot(m_v,alpha))
+            G_alpha = np.exp(np.dot(alpha,m_v))
+            etaOfG = np.multiply(G_alpha,np.dot(alpha,m_v))
+            
+            integral_etaOfG = np.dot(etaOfG,self.q.w)
+            
+            """
+            #Code for a non-vectorized version 
+            m_v = q.p.T
+            
+            G_alpha = np.exp(np.dot(m_v,alpha))
+            
+            EtaofG = np.multiply(np.dot(m_v,alpha)-1,G_alpha)
+            
+            integral_EtaofG = np.dot(q.w.T,EtaofG)
+            
+            return integral_EtaofG
+            """
+            return integral_etaOfG
     
-        mG = np.multiply(G_alpha[:,np.newaxis],m_v)
-        
-        integral_mG = np.dot(q.w.T,mG)
-        
-        return integral_mG 
+    def moment_vector(self,alpha,tol = 1e-10):
         """
+        Want to handle vectorized input for alpha
+        in the shape
+        (n_vals,len_alpha)
+        """
+        if self.N == 1:
+            if abs(alpha[1]) < tol:
+                u_0 = 2*np.exp(alpha[0])
+                u_1 = 0
+            else:
+                u_0 = 2*np.exp(alpha[0])*(np.sinh(alpha[1])/alpha[1])
+                u_1 = 2*np.exp(alpha[0])*((alpha[1]*np.cosh(alpha[1]))-np.sinh(alpha[1]))/(alpha[1]**2)
+            return np.array([u_0,u_1])
+        
+        elif self.N >= 1:
+            m_v = self.q.p
+            #m_v.shape = (N+1,n_v) 
+            #where n_v is numquadpts
+            
+            G_alpha = np.exp(np.dot(alpha,m_v)) 
+            #G_alpha.shape = (n_x,n_v)
+            moment_set = []
+            for k in range(self.N+1):
+                mG = np.multiply(G_alpha,m_v[k,:])
+                #Take integral via dotting with quadrature weights. 
+                #this is the same as integral mG.
+                
+                moment_set.append(np.dot(mG,self.q.w))
+            
+            moments_out = np.hstack([x[:,np.newaxis] for x in moment_set])
+            #Moments_out shape is: (n_x,N+1)
+            
+            """
+            #Code for a non-vectorized version
+            m_v = q.p.T
+            
+            G_alpha = np.exp(np.dot(m_v,alpha))
+        
+            mG = np.multiply(G_alpha[:,np.newaxis],m_v)
+            
+            integral_mG = np.dot(q.w.T,mG)
+            
+            return integral_mG 
+            """
         
         return moments_out 
     
@@ -93,7 +116,7 @@ class dualityTools:
             first N components of each vector alpha[i,:]. 
         """
         
-        if N >= 2:
+        if self.N >= 2:
             
             m_v = self.q.p
             GoverExp =  np.exp(np.dot(alpha[:,1:],m_v))
@@ -112,40 +135,31 @@ class dualityTools:
             
             a0_out = - np.log( integral_Goverexp )
             """
-        if N == 1:
-            #Here the intergral has an elementary expression so we can use it 
             
-            """
-            This is for vectorized evaluation. The code in makeM1data is not vectorized currently.
-            
+        elif self.N == 1:
+            #Here the intergral has an elementary form so we can use it 
+    
             a0_out = np.zeros((alpha.shape[0],),dtype = float)
-            
-            #alpha_null is the set of values where we might get overflow from sinh(alpha1)/alpha1
-            #I did not take the time to make sinh(alpha1)/alphanull more stable. 
             
             alpha_null = np.abs(alpha[:,1:]) < tol 
             
             a0_out[alpha_null] = -np.log(2) 
             
-            a0_out[1-alpha_null] = -np.log( np.divide(2*np.sinh(alpha[1-alpha_null,1:]), alpha[1-alpha_null,1:]) )
+            a0_out[1-alpha_null] = -np.log(np.divide(2*np.sinh(alpha[1-alpha_null,1:]),alpha[1-alpha_null,1:]))
+            
             """
+            #Non-vectorized 
             if np.abs(alpha) < tol:
                 
                 a0_out = -np.log(2) 
             else:
                 
                 a0_out = -np.log(np.divide(2*np.sinh(alpha), alpha))
-                
+            """
+            
         return a0_out 
-    
+    """
     def fobj(self,alpha,u = None,gamma = None):
-        """
-        Returns the value of entropy dual objective function 
-        for an input value of the multplier variable, alpha. 
-        
-        This is equal to primal entropy objective function 
-        when strong-duality is applicable. 
-        """
         if closure == 'P_N':
     
             wG = q.w*np.dot(q.p.T,alpha)
@@ -175,7 +189,7 @@ class dualityTools:
         output = [f,g,wG]
     
         return output 
-    
+    """
 #2. Obtain integrals: produce p^{t} x a = [p^{t}_ik * a_k]_{ik} and then 
 def getTestData():
     #this is defined in the modelFrame script 

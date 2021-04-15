@@ -147,16 +147,34 @@ class make_MN_data:
         #Save to pandas csv 
         
     def make_testData(self,testParams,N = self.N):
-        
-        alpha_list = []
-        entropy_list = []
-        moment_list = []
-        
+        """
+        Parameters:
+            
+            
+        Returns:
+            
+            
+        """
         if N == 1:
             
-            self.test_N_alpha1, self.test_alpha1_min, self.test_alpha1_max = testParams[0]
-            self.test_N_u0, self.test_u0_min, self.test_alpha1_max = testParams[1]
+            num_alpha1, alpha1_min, alpha1_max = testParams[0]
+            num_u0, u0_min, u0_max = testParams[1]
             
+            
+            alpha1_mesh = np.linspace(alpha1_min,alpha1_max,num_alpha1)
+            u0_mesh = np.linspace(u0_min,u0_max,num_u0)
+            
+            
+            alpha0_projected = self.DT.alpha0surface(alpha1_mesh)
+            
+            u0_scale = np.log(u0_mesh)
+        
+
+            """
+            #non vectorized code 
+            alpha_list = []
+            entropy_list = []
+            moment_list = []
             for i in range(N_alpha1):
                 #For each value of alpha_1, alpha_0 is monotonically increasing in u_0. 
                 #This can be seen from the N = 1,d = 1 elementary expression for the reconstruction map
@@ -188,9 +206,9 @@ class make_MN_data:
             alpha_data  = np.array(alpha_list,    dtype = float)
             moment_data = np.array(moment_list,   dtype= float)
             entropy_data = np.array(entropy_list, dtype =float)
-        
-                    
-        elif N > 1:
+            """
+          
+        elif N == 2:
             
             
             pass
