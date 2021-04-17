@@ -114,8 +114,9 @@ class make_MN_data:
             entropy_data = np.array(entropy_list, dtype =float)            
             """
                 
-        elif N  == 2:
+        elif N  >= 2:
             
+            #Free this to variable length 
             num_alpha1,min_alpha1,max_alpha1,num_alpha2,min_alpha2,max_alpha2  = trainParams
             
             
