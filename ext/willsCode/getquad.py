@@ -45,7 +45,7 @@ Outputs:
 
 import numpy as np
 from fclencurt import fclencurt
-from LGWT import lgwt
+from LGWT import LGWT
 from lpAtMu import lpAtMu
 
 
