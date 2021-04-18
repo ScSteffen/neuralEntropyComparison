@@ -3,9 +3,11 @@ collection of utility functions
 """
 
 import numpy as np
+import pandas as pd
 import numpy.linalg as la
 import warnings 
 import math 
+from tabulate import tabulate 
 warnings.simplefilter('error',RuntimeWarning)
 eps = np.finfo(float).eps
 #from getquad import getquad
@@ -326,6 +328,9 @@ class dualityTools:
                 
                 m_v = self.q.p
                 
+                #Removed the 1 from alpha[:,1:] since we are passing 
+                #an alpha of length N, not N+1 with 0th coordinate useless
+                
                 GoverExp =  np.exp(np.dot(alpha[:,:],m_v[1:,:]))
     
                 integral_GoverExp = np.dot(GoverExp,self.q.w)
@@ -356,15 +361,17 @@ class dualityTools:
         elif self.N == 1:
             #Here the intergral has an elementary form so we can use it 
     
+            #this pathway is incorrect; needs to be adjusted 
+            
             if len(alpha.shape) > 1:
                 
                 a0_out = np.zeros((alpha.shape[0],),dtype = float)
                 
-                alpha_null = np.abs(alpha[:,1]) < tol 
+                alpha_null = np.abs(alpha[:]) < tol 
                 
                 a0_out[alpha_null] = -np.log(2) 
                 
-                a0_out[1-alpha_null] = -np.log(np.divide(2*np.sinh(alpha[1-alpha_null,1]),alpha[1-alpha_null,1]))
+                a0_out[1-alpha_null] = -np.log(np.divide(2*np.sinh(alpha[1-alpha_null]),alpha[1-alpha_null]))
             
             elif len(alpha.shape) == 1:
                 
@@ -406,25 +413,28 @@ class MN_Data:
             
             self.alpha1_min,self.alpha1_max,self.num_alpha1 = alpha1_info
             
-            if self.strat == 'uniform':
+            if self.train_strat == 'uniform':
                 
                 alpha1_mesh,self.alpha1_step = np.linspace(self.alpha1_min,self.alpha1_max,\
                                                                 self.num_alpha1,retstep = True)
             
-                alpha0_vals = self.DT.alpha0surface(self.alpha1_mesh)
+                alpha0_vals = self.DT.alpha0surface(alpha1_mesh)
                 
                 alpha_data = np.hstack([alpha0_vals,alpha1_mesh])
                 
                 moment_data = self.DT.moment_vector(alpha_data)
                 
                 entropy_data = self.DT.entropy(alpha_data)
+            
+                total_data = np.hstack([alpha_data,moment_data])
                 
-                #total_data = np.hstack([entropy_data[:,np.newaxis],*[alpha_da+str(i) for i in range(1,N+1)]])
+                total_data = np.hstack([entropy_data[:,np.newaxis],total_data])
                 
-                #df_data = pd.DataFrame(total_data,columns = df_cols)
-                #ta,moment_data])
+                data_cols = ['h',*['alpha'+str(i) for i in range(0,N+1)],*['u'+str(i) for i in range(0,N+1)]]
                 
-                #data_cols = ['h',*['alpha'+str(i) for i in range(0,N+1)],*['u'+str(i) for i in range(0,N+1)]]
+                df_data = pd.DataFrame(total_data,columns = data_cols)
+                
+                print(tabulate(df_data,headers = 'keys',tablefmt = 'psql'))
             
         elif self.N >= 1:
             
@@ -456,21 +466,23 @@ class MN_Data:
                 
                 alpha0_vals = self.DT.alpha0surface(alpha_data)
                 
-                alpha_data = np.hstack([alpha0_vals,alpha_data])
+                alpha_data = np.hstack([alpha0_vals[:,np.newaxis],alpha_data])
                 
                 moment_data = self.DT.moment_vector(alpha_data)
                 
                 entropy_data = self.DT.entropy(alpha_data)
                 
-                entropy_data = entropy_data[:,np.newaxis]
+                total_data = np.hstack([alpha_data,moment_data])
                 
-                total_data = np.hstack([entropy_data[:,np.newaxis],alpha_data,moment_data])
+                total_data = np.hstack([entropy_data[:,np.newaxis],total_data])
                 
-                data_cols = ['h',*['alpha'+str(i) for i in range(0,N+1)],*['u'+str(i) for i in range(1,N+1)]]
+                data_cols = ['h',*['alpha'+str(i) for i in range(0,N+1)],*['u'+str(i) for i in range(0,N+1)]]
                 
                 df_data = pd.DataFrame(total_data,columns = data_cols)
                 
+                print(tabulate(df_data,headers = 'keys',tablefmt = 'psql'))
                 #df_data.to_csv() 
+                
     def make_test_data(self,strat,*args,**kwargs):
         
         self.test_strat = strat 
@@ -578,8 +590,8 @@ def getCurrDegreeSize(currDegree, spatialDim):
             np.math.factorial(currDegree) * np.math.factorial(spatialDim - 1))
     
 if __name__ == "__main__":
-    N = 2
+    N = 1
     Q = getquad('lgwt',10,-1,1,N)
     
     DataClass = MN_Data(N,Q,'M_N')
-    DataClass.make_train_data('uniform',[-1,1,10],[-2,2,10])
+    DataClass.make_train_data('uniform',[-1,1,10])
