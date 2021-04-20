@@ -15,6 +15,48 @@ eps = np.finfo(float).eps
 
 # from getquad import getquad
 
+def mono_basis_1D(quadPts, polyDegree):
+    # to be referenced in dualityTools
+    """
+    params: quadPts = quadrature points to evaluate
+            polyDegree = maximum degree of the basis
+    return: monomial basis evaluated at quadrature points
+    """
+    basisLen = getBasisSize(polyDegree, 1)
+    nq = quadPts.shape[0]
+    monomialBasis = np.zeros((basisLen, nq))
+
+    for idx_quad in range(0, nq):
+        for idx_degree in range(0, polyDegree + 1):
+            monomialBasis[idx_degree, idx_quad] = np.power(quadPts[idx_quad], idx_degree)
+    return monomialBasis
+
+
+def getBasisSize(polyDegree, spatialDim):
+    # to be referenced in dualityTools
+    """
+    params: polyDegree = maximum Degree of the basis
+            spatialDIm = spatial dimension of the basis
+    returns: basis size
+    """
+
+    basisLen = 0
+
+    for idx_degree in range(0, polyDegree + 1):
+        basisLen += int(
+            getCurrDegreeSize(idx_degree, spatialDim))
+
+    return basisLen
+
+
+def getCurrDegreeSize(currDegree, spatialDim):
+    """
+    Computes the number of polynomials of the current spatial dimension
+    """
+    return np.math.factorial(currDegree + spatialDim - 1) / (
+            np.math.factorial(currDegree) * np.math.factorial(spatialDim - 1))
+
+
 
 def fclencurt(N1, a, b):
     # 2. Compute points and weights:
@@ -85,7 +127,7 @@ def lpAtMu(v, N):
         return p
 
 
-def getquad(arg1, nq, a, b, N):
+def getquad(arg1, nq, a, b, N,mono = True):
     # 2. Skip segment of code in 'getquad.m' corresponding to 'argin' number. Assume all arguments are specified
 
     rule = arg1
@@ -131,7 +173,10 @@ def getquad(arg1, nq, a, b, N):
         elif rule == 'clencurt':
             mu, w = fclencurt(nq, a, b)
 
-        p = lpAtMu(mu, N)
+        if mono:
+            p = mono_basis_1D(mu,N)
+        else:
+            p = lpAtMu(mu, N)
 
     # 5. Not yet completed quadrature methods:
 
@@ -594,49 +639,6 @@ class MN_Data:
         """
 
         return u[indices]
-
-
-### Basis Computation
-def computeMonomialBasis1D(quadPts, polyDegree):
-    # to be referenced in dualityTools
-    """
-    params: quadPts = quadrature points to evaluate
-            polyDegree = maximum degree of the basis
-    return: monomial basis evaluated at quadrature points
-    """
-    basisLen = getBasisSize(polyDegree, 1)
-    nq = quadPts.shape[0]
-    monomialBasis = np.zeros((basisLen, nq))
-
-    for idx_quad in range(0, nq):
-        for idx_degree in range(0, polyDegree + 1):
-            monomialBasis[idx_degree, idx_quad] = np.power(quadPts[idx_quad], idx_degree)
-    return monomialBasis
-
-
-def getBasisSize(polyDegree, spatialDim):
-    # to be referenced in dualityTools
-    """
-    params: polyDegree = maximum Degree of the basis
-            spatialDIm = spatial dimension of the basis
-    returns: basis size
-    """
-
-    basisLen = 0
-
-    for idx_degree in range(0, polyDegree + 1):
-        basisLen += int(
-            getCurrDegreeSize(idx_degree, spatialDim))
-
-    return basisLen
-
-
-def getCurrDegreeSize(currDegree, spatialDim):
-    """
-    Computes the number of polynomials of the current spatial dimension
-    """
-    return np.math.factorial(currDegree + spatialDim - 1) / (
-            np.math.factorial(currDegree) * np.math.factorial(spatialDim - 1))
 
 
 if __name__ == "__main__":
