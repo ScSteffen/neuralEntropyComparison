@@ -4,7 +4,6 @@ collection of utility functions
 
 import numpy as np
 import pandas as pd
-import numpy.linalg as la
 import warnings
 import math
 from tabulate import tabulate
@@ -55,7 +54,6 @@ def getCurrDegreeSize(currDegree, spatialDim):
     """
     return np.math.factorial(currDegree + spatialDim - 1) / (
             np.math.factorial(currDegree) * np.math.factorial(spatialDim - 1))
-
 
 
 def fclencurt(N1, a, b):
@@ -127,7 +125,7 @@ def lpAtMu(v, N):
         return p
 
 
-def getquad(arg1, nq, a, b, N,mono = True):
+def getquad(arg1, nq, a, b, N, mono=True):
     # 2. Skip segment of code in 'getquad.m' corresponding to 'argin' number. Assume all arguments are specified
 
     rule = arg1
@@ -174,7 +172,7 @@ def getquad(arg1, nq, a, b, N,mono = True):
             mu, w = fclencurt(nq, a, b)
 
         if mono:
-            p = mono_basis_1D(mu,N)
+            p = mono_basis_1D(mu, N)
         else:
             p = lpAtMu(mu, N)
 
@@ -433,7 +431,26 @@ class MN_Data:
 
         self.DT = dualityTools(closure, N, quad)
 
-    def make_train_data(self, strat, *args, **kwargs):
+    def make_train_data_wrapper(self, epsilon, alphaMax, nS):
+        """
+        :param epsilon: distance to the boundary
+        :param alpha: maximium value of alpha in one dimension
+        :param nS: number of sampling points
+        :return: [u,alpha,h]
+        """
+        if (self.N == 1):
+            return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS])
+        elif (self.N == 2):
+            return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS])
+        elif (self.N == 3):
+            return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS],
+                                        [-alphaMax, alphaMax, nS])
+        elif (self.N == 4):
+            return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS],
+                                        [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS])
+        return 0
+
+    def make_train_data(self, strat, epsilon, *args, **kwargs):
 
         self.train_strat = strat
 
@@ -477,7 +494,7 @@ class MN_Data:
 
                 linear_data = []
 
-                for i in range(1, N + 1):
+                for i in range(1, self.N + 1):
                     self.train_param_dict["num_alpha" + str(i)] = args[i - 1][-1]
                     self.train_param_dict["alpha" + str(i) + "_min"] = args[i - 1][0]
                     self.train_param_dict["alpha" + str(i) + "_max"] = args[i - 1][1]
@@ -508,17 +525,20 @@ class MN_Data:
 
                 total_data = np.hstack([entropy_data[:, np.newaxis], total_data])
 
-                data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
-                             *['u' + str(i) for i in range(0, N + 1)]]
-
-                df_data = pd.DataFrame(total_data, columns=data_cols)
+                data_cols = ['h', *['alpha' + str(i) for i in range(0, self.N + 1)],
+                             *['u' + str(i) for i in range(0, self.N + 1)]]
 
                 ## remove elements too close to the boundary
-                del_indices = self.check_realizable(moment_data, 0.0001)
+                del_indices = self.check_realizable(moment_data, epsilon)
 
-                print(del_indices)
+                total_data = total_data[del_indices]
+                # print to dataframe
+                df_data = pd.DataFrame(total_data, columns=data_cols)
+
                 print(tabulate(df_data, headers='keys', tablefmt='psql'))
                 # df_data.to_csv()
+
+                return [moment_data, alpha_data, entropy_data[:, np.newaxis]]
 
     def make_test_data(self, strat, *args, **kwargs):
 
@@ -593,21 +613,21 @@ class MN_Data:
         nSys = self.N + 1
         ns = u.shape[0]
 
-        violate_rules = np.ones((ns,))
+        violate_rules = np.array(np.ones((ns,)), dtype=bool)
 
-        if (N >= 1):  # M1 closure and upwards
+        if (self.N >= 1):  # M1 closure and upwards
             for i in range(ns):
                 if u[i, 1] > 1 - epsilon or u[i, 1] < -1 + epsilon:
-                    violate_rules[i] = 0
+                    violate_rules[i] = False
 
-        if (N >= 2):  # M2 closure and upwards
+        if (self.N >= 2):  # M2 closure and upwards
             for i in range(ns):
                 upper_bound = 1
                 lower_bound = u[i, 1] * u[i, 1]
                 if u[i, 2] > upper_bound - epsilon or u[i, 2] < lower_bound + epsilon:
-                    violate_rules[i] = 0
+                    violate_rules[i] = False
 
-        if (N >= 3):  # M3 closure and upwards
+        if (self.N >= 3):  # M3 closure and upwards
             for i in range(ns):
                 upper_bound = u[i, 2] - (u[i, 1] - u[i, 2]) * (
                         u[i, 1] - u[i, 2]) / (1 - u[i, 1])
@@ -615,9 +635,9 @@ class MN_Data:
                         u[i, 1] + u[i, 2]) / (1 + u[i, 1])
 
                 if u[i, 3] > upper_bound - epsilon or u[i, 3] < lower_bound + epsilon:
-                    violate_rules[i] = 0
+                    violate_rules[i] = False
 
-        if (N >= 4):  # M4 closure and upwards
+        if (self.N >= 4):  # M4 closure and upwards
             for i in range(ns):
 
                 upper_bound = (u[i, 2] * u[i, 2] * u[i, 2] - u[i, 3] * u[i, 3] + 2 * u[i, 1] * u[i, 2] * u[i, 3]) / (
@@ -630,20 +650,10 @@ class MN_Data:
 
         return violate_rules
 
-    def remove_elements(self, u, indices):
-        """
-
-        :param u: array like object, with sample index in 0th position, dim: ns x (N+1)
-        :param indices: shape nsx1, 1 if element keep, 0 if deleted
-        :return: u reducded by the specific elements
-        """
-
-        return u[indices]
-
 
 if __name__ == "__main__":
     N = 2
     Q = getquad('lgwt', 10, -1, 1, N)
-
+    epsilon = 0.03
     DataClass = MN_Data(N, Q, 'M_N')
-    DataClass.make_train_data('uniform', [-1, 1, 10], [-1, 1, 20])
+    DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])

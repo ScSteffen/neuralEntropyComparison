@@ -8,32 +8,31 @@ import tensorflow as tf
 from tensorflow import Tensor
 from tensorflow import keras
 
-def createIcnnClosure(inputDim,trainableParamBracket,model_losses):
 
+def createIcnnClosure(inputDim, trainableParamBracket, model_losses):
     """
     :param trainableParamBracket: bracket to determine the number of trainable parameters
     :param model_losses: a set of losses for the model
     :return:  the compiled model
     """
 
-    #translate parameter brackets into model width and depth
-    if(trainableParamBracket == 0):
+    # translate parameter brackets into model width and depth
+    if (trainableParamBracket == 0):
         modelWidth = 10
         modelDepth = 6
     else:
-        #TODO
+        # TODO
         modelWidth = 10
         modelDepth = 6
 
-    #translate set of model losses into a model readble format
+    # translate set of model losses into a model readble format
     # TODO
     losses = []
-    model = createModel(inputDim,modelWidth, modelDepth, losses)
+    model = createModel(inputDim, modelWidth, modelDepth, losses)
     return model
 
 
-def createModel(inputDim,modelWidth, modelDepth, losses):
-
+def createModel(inputDim, modelWidth, modelDepth, losses):
     layerDim = modelWidth
 
     # Weight initializer #TODO: unify initalizer with Will!
@@ -46,16 +45,17 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
         or -> assignment opearator. These Cpp shortcuts work?
         """
         # Weighted sum of previous layers output plus bias
-        weightedNonNegSum_z = keras.layers.Dense(layerDim, kernel_constraint=keras.constraints.NonNeg(), activation=None,
-                                           kernel_initializer=initializerNonNeg,
-                                           use_bias=True, bias_initializer='zeros',
-                                           name='non_neg_component_' + str(layerIdx)
-                                           )(layerInput_z)
+        weightedNonNegSum_z = keras.layers.Dense(layerDim, kernel_constraint=keras.constraints.NonNeg(),
+                                                 activation=None,
+                                                 kernel_initializer=initializerNonNeg,
+                                                 use_bias=True, bias_initializer='zeros',
+                                                 name='non_neg_component_' + str(layerIdx)
+                                                 )(layerInput_z)
         # Weighted sum of network input
         weightedSum_x = keras.layers.Dense(layerDim, activation=None,
-                                     kernel_initializer=initializer,
-                                     use_bias=False, name='dense_component_' + str(layerIdx)
-                                     )(netInput_x)
+                                           kernel_initializer=initializer,
+                                           use_bias=False, name='dense_component_' + str(layerIdx)
+                                           )(netInput_x)
         # Wz+Wx+b
         intermediateSum = keras.layers.Add(name='add_component_' + str(layerIdx))([weightedSum_x, weightedNonNegSum_z])
 
@@ -65,24 +65,24 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
         # out = layers.BatchNormalization(name='bn_' + str(layerIdx))(out)
         return out
 
-    #WAP 14/4/21: Is this python? I've never used  : for binding variable type to argument
+    # WAP 14/4/21: Is this python? I've never used  : for binding variable type to argument
     # or -> assignment opearator 
     def convexLayerOutput(layerInput_z: Tensor, netInput_x: Tensor) -> Tensor:
         # Weighted sum of previous layers output plus bias
-        weightedNonNegSum_z = keras.layers.layers.Dense(1, kernel_constraint=keras.constraints.NonNeg(), activation=None,
-                                           kernel_initializer=initializerNonNeg,
-                                           use_bias=True,
-                                           bias_initializer='zeros'
-                                           # name='in_z_NN_Dense'
-                                           )(layerInput_z)
+        weightedNonNegSum_z = keras.layers.Dense(1, kernel_constraint=keras.constraints.NonNeg(), activation=None,
+                                                 kernel_initializer=initializerNonNeg,
+                                                 use_bias=True,
+                                                 bias_initializer='zeros'
+                                                 # name='in_z_NN_Dense'
+                                                 )(layerInput_z)
         # Weighted sum of network input
-        weightedSum_x = keras.layers.layers.Dense(1, activation=None,
-                                     kernel_initializer=initializer,
-                                     use_bias=False
-                                     # name='in_x_Dense'
-                                     )(netInput_x)
+        weightedSum_x = keras.layers.Dense(1, activation=None,
+                                           kernel_initializer=initializer,
+                                           use_bias=False
+                                           # name='in_x_Dense'
+                                           )(netInput_x)
         # Wz+Wx+b
-        intermediateSum = keras.layers.layers.Add()([weightedSum_x, weightedNonNegSum_z])
+        intermediateSum = keras.layers.Add()([weightedSum_x, weightedNonNegSum_z])
 
         # activation
         # out = tf.keras.activations.softplus(intermediateSum)
@@ -93,8 +93,8 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
     ### build the core network with icnn closure architecture ###
     input_ = keras.Input(shape=(inputDim,))
     hidden = keras.layers.Dense(layerDim, activation="softplus", kernel_initializer=initializer,
-                          bias_initializer='zeros', name="first_dense"
-                          )(input_)
+                                bias_initializer='zeros', name="first_dense"
+                                )(input_)
     for idx in range(0, modelDepth):
         hidden = convexLayer(hidden, input_, layerIdx=idx)
     output_ = convexLayerOutput(hidden, input_)  # outputlayer
@@ -117,6 +117,7 @@ def createModel(inputDim,modelWidth, modelDepth, losses):
     # show_layer_names = True, rankdir = 'TB', expand_nested = True)
 
     return model
+
 
 class sobolevModel(tf.keras.Model):
     # Sobolev implies, that the model outputs also its derivative
