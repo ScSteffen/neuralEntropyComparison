@@ -12,26 +12,6 @@ warnings.simplefilter('error',RuntimeWarning)
 eps = np.finfo(float).eps
 #from getquad import getquad
 
-"""
-def meshgrid2(*arrs):
-    arrs = tuple(reversed(arrs))
-    lens = list(map(len, arrs))
-    dim = len(arrs)
-    sz = 1
-    for s in lens:
-        sz *= s
-    ans = []
-    for i, arr in enumerate(arrs):
-        print(i,arr)
-        slc = [1]*dim
-        slc[i] = lens[i]
-        arr2 = np.asarray(arr).reshape(slc)
-        for j, sz in enumerate(lens):
-            if j != i:
-                arr2 = arr2.repeat(sz, axis=j)
-        ans.append(arr2)
-    return tuple(ans)
-"""
 
 def fclencurt(N1,a,b):
     
@@ -363,7 +343,7 @@ class dualityTools:
     
             #this pathway is incorrect; needs to be adjusted 
             
-            if len(alpha.shape) > 1:
+            if alpha.shape[0] > 1:
                 
                 a0_out = np.zeros((alpha.shape[0],),dtype = float)
                 
@@ -373,14 +353,14 @@ class dualityTools:
                 
                 a0_out[1-alpha_null] = -np.log(np.divide(2*np.sinh(alpha[1-alpha_null]),alpha[1-alpha_null]))
             
-            elif len(alpha.shape) == 1:
+            elif alpha.shape[0] == 1:
                 
                 if np.abs(alpha[1]) < tol: 
                 
                     a0_out =-np.log(2) 
                     
                 else:
-                    a0_out = -np.log(np.divide(2*np.sinh(alpha[1]),alpha[1]))
+                    a0_out = -np.log(np.divide(2*np.sinh(alpha),alpha))
         
         return a0_out 
 
@@ -545,6 +525,8 @@ class MN_Data:
                 data_cols = ['h',*['alpha'+str(i) for i in range(0,N+1)],*['u'+str(i) for i in range(1,N+1)]]
                 
                 df_data = pd.DataFrame(total_data,columns = df_cols)
+                
+                #Sample name for data: Monomial_M2_1d.csv or Monomial_M2_1d_normal.csv
         
     
 ### Basis Computation
@@ -590,8 +572,8 @@ def getCurrDegreeSize(currDegree, spatialDim):
             np.math.factorial(currDegree) * np.math.factorial(spatialDim - 1))
     
 if __name__ == "__main__":
-    N = 1
+    N = 2
     Q = getquad('lgwt',10,-1,1,N)
     
     DataClass = MN_Data(N,Q,'M_N')
-    DataClass.make_train_data('uniform',[-1,1,10])
+    DataClass.make_train_data('uniform',[-1,1,10],[-1,1,20]) 
