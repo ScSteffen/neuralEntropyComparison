@@ -451,10 +451,25 @@ class MN_Data:
         return 0
 
     def make_train_data(self, strat, epsilon, *args, **kwargs):
-
+        """
+        Params:
+            - strat (type: str): used as selector for sampling strategy. 
+            'uniform' is only currently valid value to pass 
+            
+            - epsilon (type: float): 
+                
+            - args (type(s): list): each element passed in order must be 
+                                list(min_alpha_i,max_alpha_i,num_alpha_i)
+                                for   1 \leq i \leq N
+            - kwargs:
+                - 'savedir' (type: str): full or relative 
+                path to filename for saved training data 
+        """
+            
         self.train_strat = strat
 
         if len(args) != (self.N):
+            
             raise ValueError('Number of *args passed must match N, of form (N,min_alpha1,max_alpha1)')
 
         if self.N == 1:
@@ -464,6 +479,7 @@ class MN_Data:
             self.alpha1_min, self.alpha1_max, self.num_alpha1 = alpha1_info
 
             if self.train_strat == 'uniform':
+                
                 alpha1_mesh, self.alpha1_step = np.linspace(self.alpha1_min, self.alpha1_max, \
                                                             self.num_alpha1, retstep=True)
 
@@ -481,6 +497,10 @@ class MN_Data:
 
                 data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
                              *['u' + str(i) for i in range(0, N + 1)]]
+                
+                #Copied here from N >= 1 case
+                del_indices = self.check_realizable(moment_data, epsilon)
+                total_data = total_data[del_indices]
 
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
@@ -503,15 +523,11 @@ class MN_Data:
                                                    self.train_param_dict["alpha" + str(i) + "_max"], \
                                                    self.train_param_dict["num_alpha" + str(i)]))
 
-                # Attempting to evaluate in vectorized manner
+                #Evaluate alpha mesh in vectorized manner
 
                 mesh = np.meshgrid(*linear_data)
                 alpha_data = np.vstack(list(map(np.ravel, mesh)))
                 alpha_data = alpha_data.T
-
-                # mesh = meshgrid2(*linear_data)
-                # alpha_data = np.vstack([mesh[0].ravel(),mesh[1].ravel()])
-                # alpha_data = np.vstack(list(map(np.ravel,mesh)))
 
                 alpha0_vals = self.DT.alpha0surface(alpha_data)
 
@@ -536,7 +552,10 @@ class MN_Data:
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
                 print(tabulate(df_data, headers='keys', tablefmt='psql'))
-                # df_data.to_csv()
+                
+                if 'savedir' in kwargs:
+                    self.train_data_path = kwargs['savedir']
+                    df_data.to_csv(self.train_data_path,index = False)
 
                 return [moment_data, alpha_data, entropy_data[:, np.newaxis]]
 
@@ -577,30 +596,44 @@ class MN_Data:
                                       self.test_param_dict["u0_max"], \
                                       self.test_param_dict["num_u0"])
 
-                alpha_mesh = np.meshgrid2(*linear_data[1:])
 
-                alpha_data = np.vstack(map(np.ravel, alpha_mesh))
+                mesh = np.meshgrid(*linear_data[1:])
+                alpha_data = np.vstack(list(map(np.ravel, mesh)))
+                alpha_data = alpha_data.T
 
-                alpha0_vals = self.DT.alpha0surface(self.alpha_data)
+                alpha0_vals = self.DT.alpha0surface(alpha_data)
 
-                alpha0_vals = np.vstack([alpha0_vals + u0_mesh[i] for i in range(len(u0_mesh))])
-
+                #Want n_alpha_samples \times n_u0_samples to be the size of alpha0_vals
+                
+                #We need to use hstack here to sequence these vectors since they are 1-d 
+                alpha0_vals = np.hstack([alpha0_vals + np.log(u0_mesh[i]) for i in range(len(u0_mesh))])
+                
+                #Have to reshape as 2d array in order to hstack with another 2d array 
+                alpha0_vals  = np.reshape(alpha0_vals,(alpha0_vals.shape[0],1))
+                
                 alpha_data = np.vstack([alpha_data for i in range(len(u0_mesh))])
-
+                #Might need to reshape alpha0_vals for this 
                 alpha_data = np.hstack([alpha0_vals, alpha_data])
 
                 moment_data = self.DT.moment_vector(alpha_data)
 
                 entropy_data = self.DT.entropy(alpha_data)
 
+                #Must make the entropy data fully 2d in order to hstack with other 2d arrays
                 entropy_data = entropy_data[:, np.newaxis]
+                
+                total_data = np.hstack([alpha_data, moment_data])
 
-                total_data = np.hstack([entropy_data[:, np.newaxis], alpha_data, moment_data])
+                total_data = np.hstack([entropy_data, total_data])
 
                 data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
-                             *['u' + str(i) for i in range(1, N + 1)]]
+                             *['u' + str(i) for i in range(0, N + 1)]]
 
-                df_data = pd.DataFrame(total_data, columns=df_cols)
+                df_data = pd.DataFrame(total_data, columns=data_cols)
+                
+                if 'savedir' in kwargs:
+                    self.test_data_path = kwargs['savedir']
+                    df_data.to_csv(self.test_data_path,index = False)
 
                 # Sample name for data: Monomial_M2_1d.csv or Monomial_M2_1d_normal.csv
 
@@ -656,4 +689,5 @@ if __name__ == "__main__":
     Q = getquad('lgwt', 10, -1, 1, N)
     epsilon = 0.03
     DataClass = MN_Data(N, Q, 'M_N')
-    DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])
+    #DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])
+    DataClass.make_test_data('uniform',[1,5,10],[-10,10,10],[-10,10,10])
