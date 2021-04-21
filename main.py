@@ -61,6 +61,11 @@ def main():
     Q = utils.getquad('lgwt', nq, -1, 1, options.degreeBasis)  # Create Quadrature Object
     DataClass = utils.MN_Data(options.degreeBasis, Q, 'M_N')  # Create Datacreator
 
+
+    """
+    Will: Let's change this to a save-load data structure
+    """
+    
     [u_train, alpha_train, h_train] = DataClass.make_train_data_wrapper(epsilon, alphaMax, sampleSize)
 
     print("---- Set the networks - depending on the input flags ----")

@@ -564,7 +564,7 @@ class MN_Data:
         self.test_strat = strat
 
         if self.N == 1:
-
+            #To do (Will): only nuance here is the shape of the arrays 
             pass
 
         elif self.N >= 1:
