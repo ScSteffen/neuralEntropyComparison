@@ -9,14 +9,23 @@ from tensorflow import Tensor
 from tensorflow import keras
 
 
-def createIcnnClosure(inputDim, trainableParamBracket, model_losses):
+def createIcnnClosure(inputDim, shapeTuple, lossChoices):
     """
-    :param trainableParamBracket: bracket to determine the number of trainable parameters
+    :param shapeTuple: tuple which determines network architecture. 0-th element 
+    is number of nodes per dense hidden layer (width); 1st element is number of
+    dense hidden layers (depth). 
+    
     :param model_losses: a set of losses for the model
     :return:  the compiled model
     """
 
+    modelWidth,modelDepth = shapeTuple
     # translate parameter brackets into model width and depth
+    """
+    #Commented this out; this parameter was replaced with 'shapeTuple'
+    # which receives its default values at the level of modelFrame script instead of within 
+    # the createIcnnClosure function. THIS CAN BE DELETED 
+    
     if (trainableParamBracket == 0):
         modelWidth = 10
         modelDepth = 6
@@ -24,6 +33,7 @@ def createIcnnClosure(inputDim, trainableParamBracket, model_losses):
         # TODO
         modelWidth = 10
         modelDepth = 6
+    """
 
     # translate set of model losses into a model readble format
     # TODO
@@ -127,6 +137,9 @@ class sobolevModel(tf.keras.Model):
 
         # Member is only the model we want to wrap with sobolev execution
         self.coreModel = coreModel  # must be a compiled tensorflow model
+        
+        #Will added this so we can ask the model what type it is later 
+        self.arch = 'icnn'
 
     def call(self, x, training=False):
         """

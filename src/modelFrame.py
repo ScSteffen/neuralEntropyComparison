@@ -21,26 +21,32 @@ This callback needs to be moved but is useful for hitting a certain threshold
 
 class ModelFrame:
 
-    def __init__(self, architecture=0, trainableParamBracket=1, model_losses=0, inputDim=1):
+    def __init__(self, architecture=0, shapeTuple = (20,5), lossChoices=0, inputDim=1,quad = None):
         """constructor"""
         
         """
         Create quadrature object and pass to createxxxClosure
         """
+        
+        self.nWidth = shapeTuple[0]
+        self.nLength = shapeTuple[1]
 
-        self.saveFolder = "models/bracket_" + str(trainableParamBracket) + "/losscombi_" + str(model_losses)
+        self.saveFolder = "models/losscombi_" + str(lossChoices) + "/" + str(trainableParamBracket)
+        
         if (architecture == 0):  # Steffen (synonymous with modelchoice) ==> ICNN
+            
             self.saveFolder = self.saveFolder + "/icnn"
-            self.model = createIcnnClosure(inputDim, trainableParamBracket,
-                                           model_losses)  # @Steffen: Model creation Function here
+            self.model = createIcnnClosure(inputDim, shapeTuple,
+                                           lossChoices = lossChoices)  # @Steffen: Model creation Function here
 
         elif (architecture ==1):  # Will: (model choice is ECNN)
         
             self.saveFolder = self.saveFolder + "/ecnn"
-            self.model = createEcnnClosure(inputDim, trainableParamBracket,
-                                           model_losses)  # @Will: Model creation Function here
+            self.model = createEcnnClosure(inputDim = inputDim, shapeTuple = (self.nWidth,self.nLength),\
+                                           lossChoices = lossChoices,Quad = quad)  # @Will: Model creation Function here
             
         else:
+            
             raise ValueError('architecture must be zero or 1')
 
     def showModel(self):
@@ -53,7 +59,7 @@ class ModelFrame:
         print("Model loaded from file ")
         return 0
 
-    def trainingProcedure(self, u_train, alpha_train, h_train,hess_train,**opts):
+    def trainingProcedure(self, trainData, hess_train, curriculum):
         
         """
         Will's Note:
@@ -70,6 +76,7 @@ class ModelFrame:
         
         Can 2 and 3 be done with the parser?
         """
+        u_train,alpha_train,h_train,hess_train = trainData
         
         ### TODO
         #   @WILL

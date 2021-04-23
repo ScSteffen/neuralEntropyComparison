@@ -27,41 +27,33 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 
-def createEcnnClosure(inputDim,trainableParamBracket,model_losses,**kwargs):
+def createEcnnClosure(inputDim,shapeTuple,lossChoices,Quad = None,**kwargs):
     
     """
-    What needs to be passed via trainableParamBracket is the following:
-        N = inputDim
-        nNode
-        nLayers
-        Q = Quadrature-Object
-        loss choices: a set of bools telling us which losses to enforce 
-        
-    I've implemented this via kwargs for now, but would you be able to make this 
-    switch over to trainableParamBracket? I have no clue how this argument works. 
-    
-    Also, is it correct that N  = inputDim?
     
     """
+   
     N = inputDim
     
     #These will be solved via new argument to trainableParamBracket 
-    nNode = kwargs['nNode']
-    nLayer = kwargs['nLayer']
-    
-    if N > 1:
-        #When N = 1 we don't need quadrature. Otherwise yes. 
-        Quad = kwargs['Q']
-        
+    nNode,nLayer = shapeTuple
         
     """
     This bool set is determined by model_losses; model_losses is passed as 
     an integer from the 'options' parser in main.py 
     """
+    if lossChoices == 0:
+        loss_choices = [True,False,False,False]
+        
+    elif lossChoices ==1:
+        
+        loss_choices = [True,False,True,False]
+        
+    elif lossChoices == 2:
+        #This is identical, as of now, to lossChoices == 1
+        loss_choices = [True,False,True,False]
     
-    enforce_func,enforce_grad,enforce_moment,enforce_conv = kwargs['loss_choices']
-    
-    loss_weights = [float(enforce_func),float(enforce_grad),float(enforce_moment),float(enforce_conv)]
+    loss_weights = [float(x) for x in loss_choices]
     
     """
     #1. Define a keras model via subclassing
@@ -178,6 +170,9 @@ class M1ConvexNet(tf.keras.Model):
         super(M1ConvexNet, self).__init__()
         
         #Specify architecture and input shape
+        
+        #Will added this so we can ask the model what type it is later 
+        self.arch = 'ecnn'
         
         self.inputShape = inputShape
         self.nNode = nNode

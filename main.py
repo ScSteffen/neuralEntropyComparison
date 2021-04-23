@@ -15,9 +15,11 @@ from src import utils
 def main():
     '''
     Main execution Skript to conduct the comparison study between
+    
     Input Convex neural closure by Steffen Schotthöfer (iccnClosure)
     and
-    Empirical convex neural closure by Will Porteous  (eCnnClosure)
+    
+    Empirical Convex neural closure by Will Porteous  (eCnnClosure)
     '''
     print("---------- Start Network Training Suite ------------")
     print("Parsing options")
@@ -39,6 +41,17 @@ def main():
                            "0 : [h] \n"
                            "1 :[h,u] \n"
                            "2 :[h,u,flux]", metavar="LOSSES")
+    #Will added these recently (if they don't work he will fix)
+    
+    parser.add_option("-w","--width",dest= 'nWidth',default = 10,\
+                      help = "integer for input shape of dense hidden layers; default 10",\
+                      metavar = "WIDTH")
+    parser.add_option("-s","--length",dest = 'nLength',default = 0,\
+                      help = "integer for number of dense hidden layers; default 0",\
+                      metavar = "LENGTH")
+    parser.add_option("-c","--curriculum",dest = "curr",default = 0,\
+                      help = "integer between 0 and 2 for learning curriculum",\
+                      metavar = "CURRICULUM")
     
     """
     Add options to parser for 
@@ -52,12 +65,7 @@ def main():
     
     parser.add_option("-l", "--load", dest="load", default=0,
                       help="load model weights", metavar="EVALUATE")
-    """
-    Adding keys:
-        w - width of model to pass to ICNN / ECNN
-        x - depth (number of layers) of moddel to pass to ICNN / ECNN
-    """
-
+  
     (options, args) = parser.parse_args()
 
     options.losses = int(options.losses)
@@ -66,6 +74,10 @@ def main():
     options.evaluation = bool(int(options.evaluation))
     options.bracket = int(options.bracket)
     options.load = bool(int(options.load))
+    
+    #Will added these options; if they don't work, he will fix 
+    options.nWidth = int(options.nWidth)
+    options.nLength = int(options.nLength)
 
     print("Getting train and test data")
     # Creating settings to run
@@ -76,7 +88,6 @@ def main():
 
     Q = utils.getquad('lgwt', nq, -1, 1, options.degreeBasis)  # Create Quadrature Object
     DataClass = utils.MN_Data(options.degreeBasis, Q, 'M_N')  # Create Datacreator
-
 
     """
     Will: Let's change this to a save-load data structure
@@ -94,16 +105,21 @@ def main():
     
     modelList = []  # list of models
     if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
+        
         modelList.append(ModelFrame(architecture=0, trainableParamBracket=trainableParamBracket, model_losses=losses,
                                     inputDim=inputDim))
+        
     elif options.author == "will" or options.author == "w" or options.author == "Will":
-        modelList.append(ModelFrame(architecture=1, trainableParamBracket=trainableParamBracket, model_losses=losses,
-                                    inputDim=inputDim))
+        
+        modelList.append(ModelFrame(architecture=1, (options.nWidth,options.nLength), lossChoices=losses,
+                                    inputDim=inputDim,quad = Q))
+        
     else:  # default: Choose both
         modelList.append(ModelFrame(architecture=0, trainableParamBracket=trainableParamBracket, model_losses=losses,
                                     inputDim=inputDim))
-        modelList.append(ModelFrame(architecture=1, trainableParamBracket=trainableParamBracket, model_losses=losses,
-                                    inputDim=inputDim))
+        
+        modelList.append(ModelFrame(architecture=1, (options.nWidth,options.nLength), lossChoices=losses,
+                                    inputDim=inputDi,quad = Q))
 
     print("---- Load the model weights, if flag is set ----")
     if (options.load):
