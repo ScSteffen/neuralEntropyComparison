@@ -44,12 +44,20 @@ def createEcnnClosure(inputDim,trainableParamBracket,model_losses,**kwargs):
     
     """
     N = inputDim
+    
+    #These will be solved via new argument to trainableParamBracket 
     nNode = kwargs['nNode']
     nLayer = kwargs['nLayer']
     
     if N > 1:
         #When N = 1 we don't need quadrature. Otherwise yes. 
         Quad = kwargs['Q']
+        
+        
+    """
+    This bool set is determined by model_losses; model_losses is passed as 
+    an integer from the 'options' parser in main.py 
+    """
     
     enforce_func,enforce_grad,enforce_moment,enforce_conv = kwargs['loss_choices']
     
@@ -194,8 +202,6 @@ class M1ConvexNet(tf.keras.Model):
         #Define the input layer, hidden layers, and output layer
         
         """
-        
-        
         
         #Define the input layer, hidden layers, and output layer
         self.input_layer = Dense(nNode, use_bias = True,kernel_initializer =\
@@ -545,6 +551,26 @@ class M2ConvexNet(tf.keras.Model):
          
         return [net,alpha_out,self.moment_func(alpha_out),detpa]
 
+class HaltWhen(tf.keras.callbacks.Callback):
+    def __init__(self,quantity,tol):
+        """
+        Should be used in conjunction with 
+        the saving criterion for the model; otherwise 
+        training will stop without saving the model with quantity <= tol
+        """
+        super(HaltWhen,self).__init__()
+        if type(quantity) == str:
+            self.quantity = quantity
+        else:
+            raise TypeError('HaltWhen(quantity,tol); quantity must be a string for a monitored quantity')
+        self.tol = tol
+    def on_epoch_end(self,epoch,logs = None):
+        if epoch > 1:
+            if logs.get(self.quantity) < self.tol:
+                print('\n\n',self.quantity,' has reached',logs.get(self.quantity),' < = ',self.tol,'. End Training.')
+                self.model.stop_training = True
+        else:
+            pass
 
 if __name__ == "__main__":
     

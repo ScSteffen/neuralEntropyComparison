@@ -230,33 +230,34 @@ class dualityTools:
         if self.N == 1:
 
             # If we have more than one alpha to evaluate
-            if len(alpha.shape) > 1:
+            if alpha.shape[0] > 1:
+                
                 inside = abs(alpha[:, 1]) < tol
-                outside = 1 - inside
+                outside = (1 - inside).astype(bool)
 
                 h_out = np.zeros((alpha.shape[0],), dtype=float)
 
-                h_out[outside] = 2 * np.exp(alpha[outside, 0]) * (
+                h_out[outside] = 2 * np.exp(alpha[outside, 0]) * (\
                         (alpha[outside, 0] - 2) * np.divide(np.sinh(alpha[outside, 1]), alpha[outside, 1]) + \
                         np.cosh(alpha[outside, 1]))
 
                 h_out[inside] = 2 * ((alpha[inside, 0] - 1) * np.exp(alpha[inside, 0]))
-
+                
                 # Previous return line: inside*(2*(a_0-1)*np.exp(a_0)) + outside*(2*np.exp(a_0))*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
 
-                return h_out
-
                 # If there is only one alpha to evaluate
-            else:
+            elif alpha.shape[0] ==1:
 
                 if abs(alpha[1]) < tol:
                     # if alpha_1 small just set equal to alpha_1 = 0 limit
-                    return 2 * (alpha[0] - 1) * np.exp(alpha[0])
+                    h_out = 2 * (alpha[0] - 1) * np.exp(alpha[0])
 
                 else:
-
-                    return 2 * np.exp(alpha[0]) * (
+                    
+                    h_out = 2 * np.exp(alpha[0]) * (\
                             (alpha[0] - 2) * np.divide(np.sinh(alpha[1]), alpha[1]) + np.cosh(alpha[1]))
+                
+            return h_out
 
         elif self.N >= 1:
 
@@ -289,19 +290,39 @@ class dualityTools:
         (n_vals,len_alpha)
         """
         if self.N == 1:
-            if len(alpha.shape) == 1:
-
+            if alpha.shape[0] == 1:
+#               #If only 1 sample
                 if np.abs(alpha[1]) < tol:
                     u_0 = 2 * np.exp(alpha[0])
                     u_1 = 0
-
+                    
+                    moments_out = np.array([u_0,u_1])
                 else:
+                    
 
                     u_0 = 2 * np.exp(alpha[0]) * (np.divide(np.sinh(alpha[1]), alpha[1]))
 
                     u_1 = 2 * np.exp(alpha[0]) * ((alpha[1] * np.cosh(alpha[1])) - np.sinh(alpha[1])) / (alpha[1] ** 2)
-
-                return np.array([u_0, u_1])
+                    
+                    moments_out = np.array([u_0,u_1])
+                    
+            elif alpha.shape[0] > 1:
+                #If more than 1 sample
+            
+                inside = np.abs(alpha[:,1]) < tol
+                    
+                outside = (1 - inside).astype(bool)
+                
+                moments_out = np.zeros((alpha.shape[0],2))
+                
+                moments_out[inside,0] = 2*np.exp(alpha[inside,0])
+                moments_out[inside,1] = 0
+                
+                moments_out[outside,0] = 2 * np.exp(alpha[outside,0]) * (np.divide(np.sinh(alpha[outside,1]),alpha[outside,1]))
+                moments_out[outside,1] = 2 * np.exp(alpha[outside,0]) * np.divide((alpha[outside,1] * np.cosh(alpha[outside,1]) -\
+                           np.sinh(alpha[outside,1])),np.power(alpha[outside,1],2))
+                
+            return moments_out
 
         elif self.N >= 1:
 
@@ -388,19 +409,21 @@ class dualityTools:
             """
 
         elif self.N == 1:
-            # Here the intergral has an elementary form so we can use it
-
-            # this pathway is incorrect; needs to be adjusted
+            # Here the constraint can be expressed with elementary functions 
+            #so we use them.
 
             if alpha.shape[0] > 1:
-
+                #Conditinal should select more than 1 sample
+ 
                 a0_out = np.zeros((alpha.shape[0],), dtype=float)
 
-                alpha_null = np.abs(alpha[:]) < tol
+                alpha_in = np.abs(alpha[:]) < tol
+                
+                alpha_out = (1-alpha_in).astype(bool)
 
-                a0_out[alpha_null] = -np.log(2)
+                a0_out[alpha_out] = -np.log(2)
 
-                a0_out[1 - alpha_null] = -np.log(np.divide(2 * np.sinh(alpha[1 - alpha_null]), alpha[1 - alpha_null]))
+                a0_out[alpha_out] = -np.log(np.divide(2 * np.sinh(alpha[alpha_out]), alpha[alpha_out]))
 
             elif alpha.shape[0] == 1:
 
@@ -473,18 +496,30 @@ class MN_Data:
             raise ValueError('Number of *args passed must match N, of form (N,min_alpha1,max_alpha1)')
 
         if self.N == 1:
-
-            alpha1_info = args[0]
-
-            self.alpha1_min, self.alpha1_max, self.num_alpha1 = alpha1_info
-
+            
             if self.train_strat == 'uniform':
+
+                alpha1_info = args[0]
                 
-                alpha1_mesh, self.alpha1_step = np.linspace(self.alpha1_min, self.alpha1_max, \
-                                                            self.num_alpha1, retstep=True)
+                self.train_param_dict = dict()
+                
+                self.train_param_dict['alpha1_min'] = alpha1_info[0]
+                self.train_param_dict['alpha1_max'] = alpha1_info[1]
+                self.train_param_dict['num_alpha1'] = alpha1_info[-1]
+                
+                linear_data = [np.linspace(self.train_param_dict['alpha1_min'],\
+                                           self.train_param_dict['alpha1_max'],\
+                                           self.train_param_dict['num_alpha1'])]
+                
+                alpha1_mesh = np.linspace(self.train_param_dict['alpha1_min'],\
+                                                            self.train_param_dict['alpha1_max'],\
+                                                            self.train_param_dict['num_alpha1'])
 
                 alpha0_vals = self.DT.alpha0surface(alpha1_mesh)
-
+                
+                alpha0_vals = np.reshape(alpha0_vals,(alpha0_vals.shape[0],1))
+                alpha1_mesh = np.reshape(alpha1_mesh,(alpha1_mesh.shape[0],1))
+                
                 alpha_data = np.hstack([alpha0_vals, alpha1_mesh])
 
                 moment_data = self.DT.moment_vector(alpha_data)
@@ -564,8 +599,67 @@ class MN_Data:
         self.test_strat = strat
 
         if self.N == 1:
+            
+            self.test_param_dict = dict()
+
+            linear_data = []
+            
             #To do (Will): only nuance here is the shape of the arrays 
-            pass
+            
+            self.test_param_dict["num_u0"] = args[0][-1]
+            self.test_param_dict["u0_min"] = args[0][0]
+            self.test_param_dict["u0_max"] = args[0][1]
+            linear_data.append(np.linspace(self.test_param_dict["u0_min"], \
+                                           self.test_param_dict["u0_max"], \
+                                           self.test_param_dict["num_u0"]))
+            
+            self.test_param_dict['num_alpha1'] = args[1][-1]
+            self.test_param_dict['alpha1_min'] = args[1][0]
+            self.test_param_dict['alpha1_max'] = args[1][1]
+            linear_data.append(np.linspace(self.test_param_dict['alpha1_min'],\
+                                       self.test_param_dict['alpha1_max'],\
+                                       self.test_param_dict['num_alpha1']))
+            
+            
+            u0_mesh = np.linspace(self.test_param_dict["u0_min"], \
+                                      self.test_param_dict["u0_max"], \
+                                      self.test_param_dict["num_u0"])
+            
+            alpha1_mesh = np.linspace(self.test_param_dict['alpha1_min'],\
+                                                        self.test_param_dict['alpha1_max'],\
+                                                        self.test_param_dict['num_alpha1'])
+    
+            alpha0_vals = self.DT.alpha0surface(alpha1_mesh)
+            
+            alpha0_vals = np.hstack([alpha0_vals + np.log(u0_mesh[i]) for i in range(len(u0_mesh))])
+            alpha1_data = np.hstack([alpha1_mesh for i in range(len(u0_mesh))])
+            
+            alpha0_vals  = np.reshape(alpha0_vals,(alpha0_vals.shape[0],1))
+            alpha1_data = np.reshape(alpha1_data,(alpha1_data.shape[0],1))
+            
+            alpha_data = np.hstack([alpha0_vals, alpha1_data])
+    
+            moment_data = self.DT.moment_vector(alpha_data)
+    
+            entropy_data = self.DT.entropy(alpha_data)
+    
+            total_data = np.hstack([alpha_data, moment_data])
+    
+            total_data = np.hstack([entropy_data[:, np.newaxis], total_data])
+    
+            data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
+                         *['u' + str(i) for i in range(0, N + 1)]]
+            
+            #Copied here from N >= 1 case
+            """
+            del_indices = self.check_realizable(moment_data, epsilon)
+            total_data = total_data[del_indices]
+            """
+    
+            df_data = pd.DataFrame(total_data, columns=data_cols)
+    
+            print(tabulate(df_data, headers='keys', tablefmt='psql'))
+
 
         elif self.N >= 1:
 
@@ -685,9 +779,9 @@ class MN_Data:
 
 
 if __name__ == "__main__":
-    N = 2
+    N = 1
     Q = getquad('lgwt', 10, -1, 1, N)
     epsilon = 0.03
     DataClass = MN_Data(N, Q, 'M_N')
     #DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])
-    DataClass.make_test_data('uniform',[1,5,10],[-10,10,10],[-10,10,10])
+    DataClass.make_test_data('uniform',[1,3,10],[-10,10,100])

@@ -23,7 +23,7 @@ def main():
     print("Parsing options")
     # --- parse options ---
     parser = OptionParser()
-    parser.add_option("-a", "--author", dest="author", default="both",
+    parser.add_option("-a", "--author",dest="author", default="both",
                       help="author of the network", metavar="AUTHOR")
     parser.add_option("-b", "--bracket", dest="bracket", default=1,
                       help="size bracket of network parameters", metavar="BRACKET")
@@ -39,14 +39,30 @@ def main():
                            "0 : [h] \n"
                            "1 :[h,u] \n"
                            "2 :[h,u,flux]", metavar="LOSSES")
+    
+    """
+    Add options to parser for 
+    other loss combinations: this will correspond to bools 
+    """
+    
+    """
+    Parser add options, let's call it '-c', for 
+    choice of epochs, callbacks, and learning-drop rate.
+    """
+    
     parser.add_option("-l", "--load", dest="load", default=0,
                       help="load model weights", metavar="EVALUATE")
+    """
+    Adding keys:
+        w - width of model to pass to ICNN / ECNN
+        x - depth (number of layers) of moddel to pass to ICNN / ECNN
+    """
 
     (options, args) = parser.parse_args()
 
-    options.degreeBasis = int(options.degreeBasis)
     options.losses = int(options.losses)
     options.train = bool(int(options.train))
+    options.degreeBasis = int(options.degreeBasis)
     options.evaluation = bool(int(options.evaluation))
     options.bracket = int(options.bracket)
     options.load = bool(int(options.load))
@@ -65,17 +81,17 @@ def main():
     """
     Will: Let's change this to a save-load data structure
     """
-    
     [u_train, alpha_train, h_train] = DataClass.make_train_data_wrapper(epsilon, alphaMax, sampleSize)
-
+    
     print("---- Set the networks - depending on the input flags ----")
 
     ### Choose Network size (as discussed, 1000, 2000, 5000 params) ==> Translate to size bracket (1 = 1000,2 = 2000,3 = 5000)
     # Depending on the size bracket, each network needs to adapt its width and depth (to get the corr. number of trainable parameters)
     trainableParamBracket = int(options.bracket)
     losses = int(options.losses)  # [mse(h), mse(alpha), mse(u), mse(flux)]
-    inputDim = int(options.degreeBasis) + 1  # CAREFULL HERE
-
+    #inputDim = int(options.degreeBasis) + 1  # CAREFULL HERE; we adjusted for new net input sizes
+    inputDim = int(options.degreeBasis)
+    
     modelList = []  # list of models
     if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
         modelList.append(ModelFrame(architecture=0, trainableParamBracket=trainableParamBracket, model_losses=losses,
