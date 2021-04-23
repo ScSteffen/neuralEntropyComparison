@@ -30,6 +30,12 @@ class ModelFrame:
         
         self.nWidth = shapeTuple[0]
         self.nLength = shapeTuple[1]
+        
+        self.architecture = architecture
+        
+        self.lossChoices = lossChoices
+        
+        self.N = inputDim
 
         self.saveFolder = "models/losscombi_" + str(lossChoices) + "/" + str(trainableParamBracket)
         
@@ -59,7 +65,7 @@ class ModelFrame:
         print("Model loaded from file ")
         return 0
 
-    def trainingProcedure(self, trainData, hess_train, curriculum):
+    def trainingProcedure(self, trainData, curr):
         
         """
         Will's Note:
@@ -76,19 +82,45 @@ class ModelFrame:
         
         Can 2 and 3 be done with the parser?
         """
+        
         u_train,alpha_train,h_train,hess_train = trainData
         
         ### TODO
         #   @WILL
-        num_epochs = 1000
-        batch_size = 128
+        if curr == 0:
+            
+            num_epochs = 1000
+            batch_size = 128
+    
+            
+            initial_lr = float(1e-3)
+            mt_patience = int(num_epochs/ 10)
+            stop_tol = 1e-8
+            min_delta = stop_tol / 10
+            drop_rate = (num_epochs / 3)
+            
+        elif curr == 1:
+            
+            num_epochs = 1000
+            batch_size = 128
 
-        
-        initial_lr = float(1e-3)
-        mt_patience = int(num_epochs/ 10)
-        stop_tol = 1e-8
-        min_delta = stop_tol / 10
-        drop_rate = (num_epochs / 3)
+            initial_lr = float(1e-3)
+            mt_patience = int(num_epochs/ 10)
+            stop_tol = 1e-8
+            min_delta = stop_tol / 10
+            drop_rate = (num_epochs / 3)
+            
+        elif curr == 2:
+            
+            num_epochs = 1000
+            batch_size = 128
+
+            initial_lr = float(1e-3)
+            mt_patience = int(num_epochs/ 10)
+            stop_tol = 1e-8
+            min_delta = stop_tol / 10
+            drop_rate = (num_epochs / 3)
+            
         
         def step_decay(epoch):
             
@@ -123,10 +155,17 @@ class ModelFrame:
         Model bool / string to switch training for Steffen or Will
         because Will needs 1 more argument - the hessian target values 
         """"
+        if model.arch == 'icnn':
         
-        moment_history = self.model.fit(x=u_train, y=[h_train, alpha_train, u_train],
-                                        validation_split=0.01,
-                                        epochs=num_epochs, batch_size=batch_size, callbacks=callbackList)
+            moment_history = self.model.fit(x=u_train, y=[h_train, alpha_train, u_train],
+                                            validation_split=0.20,
+                                            epochs=num_epochs, batch_size=batch_size, callbacks=callbackList)
+        elif model.arch = 'ecnn':
+            
+            moment_history = self.model.fit(x=u_train, y=[h_train, alpha_train, u_train,hess_train],
+                                            validation_split=0.20,
+                                            epochs=num_epochs, batch_size=batch_size, callbacks=callbackList)
+            
         return moment_history
 
     def createCSVLoggerCallback(self):

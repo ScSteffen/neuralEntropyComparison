@@ -526,12 +526,12 @@ class MN_Data:
 
                 entropy_data = self.DT.entropy(alpha_data)
 
-                total_data = np.hstack([alpha_data, moment_data])
+                total_data = np.hstack([moment_data,alpha_data])
 
-                total_data = np.hstack([entropy_data[:, np.newaxis], total_data])
+                total_data = np.hstack([total_data,entropy_data[:, np.newaxis]])
 
-                data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
-                             *['u' + str(i) for i in range(0, N + 1)]]
+                data_cols = [*['u' + str(i) for i in range(0, self.N + 1)],\
+                                    *['alpha' + str(i) for i in range(0, self.N + 1)],'h']
                 
                 #Copied here from N >= 1 case
                 del_indices = self.check_realizable(moment_data, epsilon)
@@ -572,12 +572,12 @@ class MN_Data:
 
                 entropy_data = self.DT.entropy(alpha_data)
 
-                total_data = np.hstack([alpha_data, moment_data])
+                total_data = np.hstack([moment_data,alpha_data])
 
-                total_data = np.hstack([entropy_data[:, np.newaxis], total_data])
+                total_data = np.hstack([total_data,entropy_data[:, np.newaxis]])
 
-                data_cols = ['h', *['alpha' + str(i) for i in range(0, self.N + 1)],
-                             *['u' + str(i) for i in range(0, self.N + 1)]]
+                data_cols = [*['u' + str(i) for i in range(0, self.N + 1)],\
+                                    *['alpha' + str(i) for i in range(0, self.N + 1)],'h']
 
                 ## remove elements too close to the boundary
                 del_indices = self.check_realizable(moment_data, epsilon)
@@ -643,12 +643,12 @@ class MN_Data:
     
             entropy_data = self.DT.entropy(alpha_data)
     
-            total_data = np.hstack([alpha_data, moment_data])
+            total_data = np.hstack([moment_data,alpha_data])
     
-            total_data = np.hstack([entropy_data[:, np.newaxis], total_data])
+            total_data = np.hstack([total_data,entropy_data[:, np.newaxis]])
     
-            data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
-                         *['u' + str(i) for i in range(0, N + 1)]]
+            data_cols = [*['u' + str(i) for i in range(0, N + 1)],\
+                                *['alpha' + str(i) for i in range(0, N + 1)],'h']
             
             #Copied here from N >= 1 case
             """
@@ -716,12 +716,12 @@ class MN_Data:
                 #Must make the entropy data fully 2d in order to hstack with other 2d arrays
                 entropy_data = entropy_data[:, np.newaxis]
                 
-                total_data = np.hstack([alpha_data, moment_data])
+                total_data = np.hstack([moment_data,alpha_data])
 
-                total_data = np.hstack([entropy_data, total_data])
+                total_data = np.hstack([total_data,entropy_data])
 
-                data_cols = ['h', *['alpha' + str(i) for i in range(0, N + 1)],
-                             *['u' + str(i) for i in range(0, N + 1)]]
+                data_cols = [*['u' + str(i) for i in range(0, N + 1)],\
+                               *['alpha' + str(i) for i in range(0, N + 1)],'h']
 
                 df_data = pd.DataFrame(total_data, columns=data_cols)
                 

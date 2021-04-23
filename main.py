@@ -78,6 +78,7 @@ def main():
     #Will added these options; if they don't work, he will fix 
     options.nWidth = int(options.nWidth)
     options.nLength = int(options.nLength)
+    options.curr = int(options.curr)
 
     print("Getting train and test data")
     # Creating settings to run
@@ -93,6 +94,7 @@ def main():
     Will: Let's change this to a save-load data structure
     """
     [u_train, alpha_train, h_train] = DataClass.make_train_data_wrapper(epsilon, alphaMax, sampleSize)
+    hess_train = np.zeros((u_train.shape[0],),dtype = float)
     
     print("---- Set the networks - depending on the input flags ----")
 
@@ -133,7 +135,8 @@ def main():
     if (options.train):
         # Train all models in the list
         for model in modelList:
-            model.trainingProcedure(u_train, alpha_train, h_train)
+            model.trainingProcedure([u_train, alpha_train, h_train,hess_train],\
+                                    options.curr)
         print("Training successfull")
     else:
         print("Training skipped")
