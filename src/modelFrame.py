@@ -51,6 +51,10 @@ class ModelFrame:
             self.model = createEcnnClosure(inputDim = inputDim, shapeTuple = (self.nWidth,self.nLength),\
                                            lossChoices = lossChoices,Quad = quad)  # @Will: Model creation Function here
             
+        #Alternate behavior: 
+            #return uncompiled model and compile here (i.e. assign the losses), possibly changing
+            #ICNN to accomodate hessian loss (but with weight zero)
+            
         else:
             
             raise ValueError('architecture must be zero or 1')
@@ -89,15 +93,17 @@ class ModelFrame:
         #   @WILL
         if curr == 0:
             
-            num_epochs = 1000
-            batch_size = 128
-    
-            
+            #We only use this at the moment
+            num_epochs = int(1.5*(1e+04))
             initial_lr = float(1e-3)
-            mt_patience = int(num_epochs/ 10)
-            stop_tol = 1e-8
-            min_delta = stop_tol / 10
             drop_rate = (num_epochs / 3)
+            
+            
+            mt_patience = int(num_epochs/ 10)
+            min_delta = stop_tol / 10
+            
+            stop_tol = 1e-7
+            batch_size = int(100)
             
         elif curr == 1:
             
@@ -128,29 +134,25 @@ class ModelFrame:
             
             return step_size 
         
-        will_LR = LearningRateScheduler(step_decay)
+        #this callback good to go 
+        LR = LearningRateScheduler(step_decay)
         
-        will_MC =  ModelCheckpoint(self.saveFolder, \
-                              monitor = 'val_output_3_loss',\
-                              save_best_only = True,\
+        MC =  ModelCheckpoint(self.saveFolder+'/best_model.h5', \
+                              monitor = 'val_output_'+str(self.lossChoices)+'_loss',\
+                              save_best_only = True,\+
                               save_weights_only = False,\
                               mode = 'min',verbose=1)
         
-        will_HW = HaltWhen('val_output_3_loss',stop_tol)
+        HW = HaltWhen('val_output_'+str(self.lossChoices)+'_loss',stop_tol)
         
-        will_ES = EarlyStopping(monitor = 'val_output_3_loss',mode = 'min',\
+        ES = EarlyStopping(monitor = 'val_output_'+str(self.lossChoices)+'_loss',mode = 'min',\
                               verbose = 1,patience = mt_patience,\
                               min_delta = 1e-8)
         
-        will_callback_list = [mt_MC,mt_ES,mt_HW,mt_CS,LR]
-
-        # Create Callbacks
-        mc_best = tf.keras.callbacks.ModelCheckpoint(self.saveFolder + '/best_model.h5', monitor='loss', mode='min',
-                                                     save_best_only=True, verbose=1)
-        csv_logger = self.createCSVLoggerCallback()
-
-        callbackList = [mc_best, csv_logger]
-    
+        CSV_Logger = self.createCSVLoggerCallback()
+        
+        callback_list = [MC,ES,HW,CS,LR,CSV_Logger]
+      
         """
         Model bool / string to switch training for Steffen or Will
         because Will needs 1 more argument - the hessian target values 
@@ -193,3 +195,6 @@ class ModelFrame:
         # TODO
         # @WIll
         return 0
+    
+if __name__ == "__main__":
+    pass 

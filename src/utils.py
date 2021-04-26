@@ -461,6 +461,7 @@ class MN_Data:
         :param nS: number of sampling points
         :return: [u,alpha,h]
         """
+        
         if (self.N == 1):
             return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS])
         elif (self.N == 2):
@@ -471,6 +472,7 @@ class MN_Data:
         elif (self.N == 4):
             return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS],
                                         [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS])
+            
         return 0
 
     def make_train_data(self, strat, epsilon, *args, **kwargs):
@@ -539,7 +541,7 @@ class MN_Data:
 
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
-                print(tabulate(df_data, headers='keys', tablefmt='psql'))
+                #print(tabulate(df_data, headers='keys', tablefmt='psql'))
 
         elif self.N >= 1:
 
@@ -586,7 +588,7 @@ class MN_Data:
                 # print to dataframe
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
-                print(tabulate(df_data, headers='keys', tablefmt='psql'))
+                #print(tabulate(df_data, headers='keys', tablefmt='psql'))
                 
                 if 'savedir' in kwargs:
                     self.train_data_path = kwargs['savedir']
