@@ -83,9 +83,16 @@ def main():
     print("Getting train and test data")
     # Creating settings to run
     nq = 40
+    
+    """
+    Create method to save data, or, simply 
+    training data parameters, according to 
+    the dataset, inside MN_Data
+    or in the main file here
+    """
     epsilon = 0.001
-    sampleSize = 100
-    alphaMax = 100
+    sampleSize = int(1e+04)
+    alphaMax = 70
 
     Q = utils.getquad('lgwt', nq, -1, 1, options.degreeBasis)  # Create Quadrature Object
     DataClass = utils.MN_Data(options.degreeBasis, Q, 'M_N')  # Create Datacreator
@@ -93,6 +100,8 @@ def main():
     """
     Will: Let's change this to a save-load data structure
     """
+    #Compute distance to boundary in N =  1 case from analytic map 
+    
     [u_train, alpha_train, h_train] = DataClass.make_train_data_wrapper(epsilon, alphaMax, sampleSize)
     hess_train = np.zeros((u_train.shape[0],),dtype = float)
     
@@ -108,7 +117,7 @@ def main():
     modelList = []  # list of models
     if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
         
-        modelList.append(ModelFrame(architecture=0, trainableParamBracket=trainableParamBracket, model_losses=losses,
+        modelList.append(ModelFrame(architecture=0,(options.nWidth,options.nLength), lossChoices=losses,
                                     inputDim=inputDim))
         
     elif options.author == "will" or options.author == "w" or options.author == "Will":
@@ -117,7 +126,7 @@ def main():
                                     inputDim=inputDim,quad = Q))
         
     else:  # default: Choose both
-        modelList.append(ModelFrame(architecture=0, trainableParamBracket=trainableParamBracket, model_losses=losses,
+        modelList.append(ModelFrame(architecture=0, (options.nWidth,options.nLength), lossChoices=losses,
                                     inputDim=inputDim))
         
         modelList.append(ModelFrame(architecture=1, (options.nWidth,options.nLength), lossChoices=losses,

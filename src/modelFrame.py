@@ -51,6 +51,10 @@ class ModelFrame:
             self.model = createEcnnClosure(inputDim = inputDim, shapeTuple = (self.nWidth,self.nLength),\
                                            lossChoices = lossChoices,Quad = quad)  # @Will: Model creation Function here
             
+        #Alternate behavior: 
+            #return uncompiled model and compile here (i.e. assign the losses), possibly changing
+            #ICNN to accomodate hessian loss (but with weight zero)
+            
         else:
             
             raise ValueError('architecture must be zero or 1')
@@ -89,15 +93,17 @@ class ModelFrame:
         #   @WILL
         if curr == 0:
             
-            num_epochs = 1000
+            num_epochs = int(1.5*(1e+04))
             batch_size = 128
-    
-            
             initial_lr = float(1e-3)
-            mt_patience = int(num_epochs/ 10)
-            stop_tol = 1e-8
-            min_delta = stop_tol / 10
             drop_rate = (num_epochs / 3)
+            
+            
+            mt_patience = int(num_epochs/ 10)
+            min_delta = stop_tol / 10
+            stop_tol = 1e-7
+            
+            batch_size = 50
             
         elif curr == 1:
             
@@ -193,3 +199,6 @@ class ModelFrame:
         # TODO
         # @WIll
         return 0
+    
+if __name__ == "__main__":
+    pass 

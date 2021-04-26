@@ -461,6 +461,7 @@ class MN_Data:
         :param nS: number of sampling points
         :return: [u,alpha,h]
         """
+        
         if (self.N == 1):
             return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS])
         elif (self.N == 2):
@@ -471,6 +472,7 @@ class MN_Data:
         elif (self.N == 4):
             return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS],
                                         [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS])
+            
         return 0
 
     def make_train_data(self, strat, epsilon, *args, **kwargs):
