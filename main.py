@@ -38,9 +38,10 @@ def main():
                       help="evaluation and error analysis", metavar="EVALUATE")
     parser.add_option("-o", "--lossCombi", dest="losses", default=0,
                       help="combination of model losses (objective functions): \n"
-                           "0 : [h] \n"
-                           "1 :[h,u] \n"
-                           "2 :[h,u,flux]", metavar="LOSSES")
+                           "1 : [h] \n"
+                           "2:  [h,alpha] \n"
+                           "3 : [h,u] \n"
+                           "4:  [h,u,flux]", metavar="LOSSES")
     #Will added these recently (if they don't work he will fix)
     
     parser.add_option("-w","--width",dest= 'nWidth',default = 10,\

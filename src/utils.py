@@ -541,7 +541,7 @@ class MN_Data:
 
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
-                print(tabulate(df_data, headers='keys', tablefmt='psql'))
+                #print(tabulate(df_data, headers='keys', tablefmt='psql'))
 
         elif self.N >= 1:
 
@@ -588,7 +588,7 @@ class MN_Data:
                 # print to dataframe
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
-                print(tabulate(df_data, headers='keys', tablefmt='psql'))
+                #print(tabulate(df_data, headers='keys', tablefmt='psql'))
                 
                 if 'savedir' in kwargs:
                     self.train_data_path = kwargs['savedir']
