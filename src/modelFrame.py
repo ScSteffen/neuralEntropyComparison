@@ -41,20 +41,20 @@ class ModelFrame:
 
         self.saveFolder = "models/losscombi_" + str(lossChoices) + "/width" + str(shapeTuple[0]) + "_depth" + str(
             shapeTuple[1])
-        
+
         if (architecture == 0):  # Steffen (synonymous with modelchoice) ==> ICNN
 
             self.saveFolder = self.saveFolder + "/icnn"
-            self.model = createIcnnClosure(inputDim, shapeTuple,
-                                           lossChoices=lossChoices)  # @Steffen: Model creation Function here
+            self.model = createIcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength),
+                                           lossChoices=lossChoices, Quad=quad)
 
         elif (architecture == 1):  # Will: (model choice is ECNN)
 
             self.saveFolder = self.saveFolder + "/ecnn"
-            self.model = createEcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength), \
-                                           lossChoices=lossChoices, Quad=quad)  # @Will: Model creation Function here
+            self.model = createEcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength),
+                                           lossChoices=lossChoices, Quad=quad)
 
-        # Alternate behavior:
+            # Alternate behavior:
         # return uncompiled model and compile here (i.e. assign the losses), possibly changing
         # ICNN to accomodate hessian loss (but with weight zero)
 

@@ -27,7 +27,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 
 
-def createEcnnClosure(inputDim, shapeTuple, lossChoices, Quad=None, **kwargs):
+def createEcnnClosure(inputDim, shapeTuple, lossChoices, Quad=None):
     """
     
     """

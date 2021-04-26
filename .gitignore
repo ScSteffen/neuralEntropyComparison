@@ -17,7 +17,8 @@ python/legacyCode/models/*
 # images
 *.png
 # Models
-python/models/
+models/
+data/
 
 # Distribution / packaging
 .Python

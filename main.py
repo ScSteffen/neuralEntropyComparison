@@ -26,8 +26,8 @@ def main():
     print("Parsing options")
     # --- parse options ---
     parser = OptionParser()
-    parser.add_option("-a", "--author", dest="author", default="both",
-                      help="author of the network", metavar="AUTHOR")
+    parser.add_option("-a", "--architecture", dest="architecture", default=2,
+                      help="0 : icnn\n 1 : ecnn\n 2 : both", metavar="AUTHOR")
     parser.add_option("-b", "--bracket", dest="bracket", default=1,
                       help="size bracket of network parameters", metavar="BRACKET")
     parser.add_option("-d", "--degreeBasis", dest="degreeBasis", default=1,
@@ -70,6 +70,7 @@ def main():
 
     (options, args) = parser.parse_args()
 
+    options.architecture = int(options.architecture)
     options.losses = int(options.losses)
     options.train = bool(int(options.train))
     options.degreeBasis = int(options.degreeBasis)
@@ -121,23 +122,19 @@ def main():
 
     for width_idx in [15, 20, 30]:
         for depth_idx in [2, 5, 10]:
-            if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
-
+            if options.architecture == 0:
                 modelList.append(
-                    ModelFrame(architecture=0, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
+                    ModelFrame(architecture=options.architecture, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
                                inputDim=inputDim))
-
-            elif options.author == "will" or options.author == "w" or options.author == "Will":
-
+            elif options.architecture == 1:
                 modelList.append(
-                    ModelFrame(architecture=1, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
+                    ModelFrame(architecture=options.architecture, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
                                inputDim=inputDim, quad=Q))
 
-            else:  # default: Choose both
+            else:
                 modelList.append(
                     ModelFrame(architecture=0, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
                                inputDim=inputDim))
-
                 modelList.append(
                     ModelFrame(architecture=1, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
                                inputDim=inputDim, quad=Q))

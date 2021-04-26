@@ -7,9 +7,10 @@ Date: 9.04.2021
 import tensorflow as tf
 from tensorflow import Tensor
 from tensorflow import keras
+from src import math
 
 
-def createIcnnClosure(inputDim, shapeTuple, lossChoices):
+def createIcnnClosure(inputDim, shapeTuple, lossChoices, Quad=None):
     """
     :param shapeTuple: tuple which determines network architecture. 0-th element 
     is number of nodes per dense hidden layer (width); 1st element is number of
@@ -19,7 +20,7 @@ def createIcnnClosure(inputDim, shapeTuple, lossChoices):
     :return:  the compiled model
     """
 
-    modelWidth,modelDepth = shapeTuple
+    modelWidth, modelDepth = shapeTuple
     # translate parameter brackets into model width and depth
     """
     #Commented this out; this parameter was replaced with 'shapeTuple'
@@ -34,15 +35,30 @@ def createIcnnClosure(inputDim, shapeTuple, lossChoices):
         modelWidth = 10
         modelDepth = 6
     """
-
     # translate set of model losses into a model readble format
-    # TODO
-    losses = []
-    model = createModel(inputDim, modelWidth, modelDepth, losses)
+
+    """
+        This bool set is determined by model_losses; model_losses is passed as 
+        an integer from the 'options' parser in main.py 
+        """
+    if lossChoices == 0:
+        loss_choices = [True, False, False]
+
+    elif lossChoices == 1:
+
+        loss_choices = [True, False, True]
+
+    elif lossChoices == 2:
+        # This is identical, as of now, to lossChoices == 1
+        loss_choices = [True, False, True]
+
+    loss_weights = [float(x) for x in loss_choices]
+
+    model = createModel(inputDim, modelWidth, modelDepth, loss_weights)
     return model
 
 
-def createModel(inputDim, modelWidth, modelDepth, losses):
+def createModel(inputDim, modelWidth, modelDepth, loss_weights):
     layerDim = modelWidth
 
     # Weight initializer #TODO: unify initalizer with Will!
@@ -116,41 +132,86 @@ def createModel(inputDim, modelWidth, modelDepth, losses):
     model = sobolevModel(coreModel, name="sobolev_icnn_wrapper")
     batchSize = 2  # dummy entry
     model.build(input_shape=(batchSize, inputDim))
-    model.compile(
-        loss={'output_1': tf.keras.losses.MeanSquaredError(), 'output_2': tf.keras.losses.MeanSquaredError()},
-        loss_weights={'output_1': 1, 'output_2': 1},
-        optimizer='adam',
-        metrics=['mean_absolute_error'])
-
-    # model.summary()
-    # tf.keras.utils.plot_model(model, to_file=self.filename + '/modelOverview', show_shapes=True,
-    # show_layer_names = True, rankdir = 'TB', expand_nested = True)
+    model.compile(loss={'output_1': tf.keras.losses.MeanSquaredError(), 'output_2': tf.keras.losses.MeanSquaredError(),
+                        'output_3': tf.keras.losses.MeanSquaredError()},
+                  loss_weights=loss_weights, optimizer='adam', metrics=['mean_absolute_error'])
 
     return model
 
 
 class sobolevModel(tf.keras.Model):
     # Sobolev implies, that the model outputs also its derivative
-    def __init__(self, coreModel, **opts):
-        # tf.keras.backend.set_floatx('float64')  # Full precision training
+    def __init__(self, coreModel, polyDegree=1, **opts):
         super(sobolevModel, self).__init__()
+
+        self.arch = 'icnn'
 
         # Member is only the model we want to wrap with sobolev execution
         self.coreModel = coreModel  # must be a compiled tensorflow model
-        
-        #Will added this so we can ask the model what type it is later 
-        self.arch = 'icnn'
+
+        # Create quadrature and momentBasis. Currently only for 1D problems
+        self.polyDegree = polyDegree
+        self.nq = 100
+        [quadPts, quadWeights] = math.qGaussLegendre1D(self.nq)  # dims = nq
+        self.quadPts = tf.constant(quadPts, shape=(1, self.nq), dtype=tf.float32)  # dims = (batchSIze x N x nq)
+        self.quadWeights = tf.constant(quadWeights, shape=(1, self.nq),
+                                       dtype=tf.float32)  # dims = (batchSIze x N x nq)
+        mBasis = math.computeMonomialBasis1D(quadPts, self.polyDegree)  # dims = (N x nq)
+        self.inputDim = mBasis.shape[0]
+        self.momentBasis = tf.constant(mBasis, shape=(self.inputDim, self.nq),
+                                       dtype=tf.float32)  # dims = (batchSIze x N x nq)
 
     def call(self, x, training=False):
         """
         Defines the sobolev execution
-        h  is y
-        alpha is derivative
         """
 
         with tf.GradientTape() as grad_tape:
             grad_tape.watch(x)
-            y = self.coreModel(x)
-        derivative = grad_tape.gradient(y, x)
+            h = self.coreModel(x)
+        alpha = grad_tape.gradient(h, x)
 
-        return [y, derivative]
+        # u = self.reconstruct_u(self.reconstruct_alpha(alpha))
+        return [h, alpha, alpha]
+
+    def callDerivative(self, x, training=False):
+        with tf.GradientTape() as grad_tape:
+            grad_tape.watch(x)
+            y = self.coreModel(x)
+        derivativeNet = grad_tape.gradient(y, x)
+
+        return derivativeNet
+
+    def reconstruct_alpha(self, alpha):
+        """
+        brief:  Reconstructs alpha_0 and then concats alpha_0 to alpha_1,... , from alpha1,...
+                Only works for maxwell Boltzmann entropy so far.
+        nS = batchSize
+        N = basisSize
+        nq = number of quadPts
+
+        input: alpha, dims = (nS x N-1)
+               m    , dims = (N x nq)
+               w    , dims = nq
+        returns alpha_complete = [alpha_0,alpha], dim = (nS x N), where alpha_0 = - ln(<exp(alpha*m)>)
+        """
+        tmp = tf.math.exp(tf.tensordot(alpha, self.momentBasis[1:, :], axes=([1], [0])))  # tmp = alpha * m
+        alpha_0 = -tf.math.log(tf.tensordot(tmp, self.quadWeights, axes=([1], [1])))  # ln(<tmp>)
+        return tf.concat([alpha_0, alpha], axis=1)  # concat [alpha_0,alpha]
+
+    def reconstruct_u(self, alpha):
+        """
+        brief: reconstructs u from alpha
+        nS = batchSize
+        N = basisSize
+        nq = number of quadPts
+
+        input: alpha, dims = (nS x N)
+               m    , dims = (N x nq)
+               w    , dims = nq
+        returns u = <m*eta_*'(alpha*m)>, dim = (nS x N)
+        """
+        # Currently only for maxwell Boltzmann entropy
+        f_quad = tf.math.exp(tf.tensordot(alpha, self.momentBasis, axes=([1], [0])))  # alpha*m
+        tmp = tf.math.multiply(f_quad, self.quadWeights)  # f*w
+        return tf.tensordot(tmp, self.momentBasis[:, :], axes=([1], [1]))  # f * w * momentBasis
