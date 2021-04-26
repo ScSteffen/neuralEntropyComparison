@@ -118,22 +118,29 @@ def main():
     inputDim = int(options.degreeBasis)
 
     modelList = []  # list of models
-    if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
 
-        modelList.append(ModelFrame(architecture=0, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
-                                    inputDim=inputDim))
+    for width_idx in [15, 20, 30]:
+        for depth_idx in [2, 5, 10]:
+            if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
 
-    elif options.author == "will" or options.author == "w" or options.author == "Will":
+                modelList.append(
+                    ModelFrame(architecture=0, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
+                               inputDim=inputDim))
 
-        modelList.append(ModelFrame(architecture=1, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
-                                    inputDim=inputDim, quad=Q))
+            elif options.author == "will" or options.author == "w" or options.author == "Will":
 
-    else:  # default: Choose both
-        modelList.append(ModelFrame(architecture=0, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
-                                    inputDim=inputDim))
+                modelList.append(
+                    ModelFrame(architecture=1, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
+                               inputDim=inputDim, quad=Q))
 
-        modelList.append(ModelFrame(architecture=1, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
-                                    inputDim=inputDim, quad=Q))
+            else:  # default: Choose both
+                modelList.append(
+                    ModelFrame(architecture=0, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
+                               inputDim=inputDim))
+
+                modelList.append(
+                    ModelFrame(architecture=1, shapeTuple=(width_idx, depth_idx), lossChoices=losses,
+                               inputDim=inputDim, quad=Q))
 
     print("---- Load the model weights, if flag is set ----")
     if (options.load):

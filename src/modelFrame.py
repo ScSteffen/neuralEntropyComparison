@@ -39,8 +39,9 @@ class ModelFrame:
 
         self.N = inputDim
 
-        self.saveFolder = "models/losscombi_" + str(lossChoices)
-
+        self.saveFolder = "models/losscombi_" + str(lossChoices) + "/width" + str(shapeTuple[0]) + "_depth" + str(
+            shapeTuple[1])
+        
         if (architecture == 0):  # Steffen (synonymous with modelchoice) ==> ICNN
 
             self.saveFolder = self.saveFolder + "/icnn"
