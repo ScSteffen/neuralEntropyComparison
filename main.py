@@ -10,6 +10,7 @@ from optparse import OptionParser
 ### imports of own scripts
 from src.modelFrame import ModelFrame
 from src import utils
+import numpy as np
 
 
 def main():
@@ -25,7 +26,7 @@ def main():
     print("Parsing options")
     # --- parse options ---
     parser = OptionParser()
-    parser.add_option("-a", "--author",dest="author", default="both",
+    parser.add_option("-a", "--author", dest="author", default="both",
                       help="author of the network", metavar="AUTHOR")
     parser.add_option("-b", "--bracket", dest="bracket", default=1,
                       help="size bracket of network parameters", metavar="BRACKET")
@@ -42,31 +43,31 @@ def main():
                            "2:  [h,alpha] \n"
                            "3 : [h,u] \n"
                            "4:  [h,u,flux]", metavar="LOSSES")
-    #Will added these recently (if they don't work he will fix)
-    
-    parser.add_option("-w","--width",dest= 'nWidth',default = 10,\
-                      help = "integer for input shape of dense hidden layers; default 10",\
-                      metavar = "WIDTH")
-    parser.add_option("-s","--length",dest = 'nLength',default = 0,\
-                      help = "integer for number of dense hidden layers; default 0",\
-                      metavar = "LENGTH")
-    parser.add_option("-c","--curriculum",dest = "curr",default = 0,\
-                      help = "integer between 0 and 2 for learning curriculum",\
-                      metavar = "CURRICULUM")
-    
+    # Will added these recently (if they don't work he will fix)
+
+    parser.add_option("-w", "--width", dest='nWidth', default=10, \
+                      help="integer for input shape of dense hidden layers; default 10", \
+                      metavar="WIDTH")
+    parser.add_option("-s", "--length", dest='nLength', default=0, \
+                      help="integer for number of dense hidden layers; default 0", \
+                      metavar="LENGTH")
+    parser.add_option("-c", "--curriculum", dest="curr", default=0, \
+                      help="integer between 0 and 2 for learning curriculum", \
+                      metavar="CURRICULUM")
+
     """
     Add options to parser for 
     other loss combinations: this will correspond to bools 
     """
-    
+
     """
     Parser add options, let's call it '-c', for 
     choice of epochs, callbacks, and learning-drop rate.
     """
-    
+
     parser.add_option("-l", "--load", dest="load", default=0,
                       help="load model weights", metavar="EVALUATE")
-  
+
     (options, args) = parser.parse_args()
 
     options.losses = int(options.losses)
@@ -75,8 +76,8 @@ def main():
     options.evaluation = bool(int(options.evaluation))
     options.bracket = int(options.bracket)
     options.load = bool(int(options.load))
-    
-    #Will added these options; if they don't work, he will fix 
+
+    # Will added these options; if they don't work, he will fix
     options.nWidth = int(options.nWidth)
     options.nLength = int(options.nLength)
     options.curr = int(options.curr)
@@ -84,7 +85,7 @@ def main():
     print("Getting train and test data")
     # Creating settings to run
     nq = 40
-    
+
     """
     Create method to save data, or, simply 
     training data parameters, according to 
@@ -101,37 +102,38 @@ def main():
     """
     Will: Let's change this to a save-load data structure
     """
-    #Compute distance to boundary in N =  1 case from analytic map 
-    
+    # Compute distance to boundary in N =  1 case from analytic map
+
     [u_train, alpha_train, h_train] = DataClass.make_train_data_wrapper(epsilon, alphaMax, sampleSize)
-    hess_train = np.zeros((u_train.shape[0],),dtype = float)
-    
+
+    hess_train = np.zeros((u_train.shape[0],), dtype=float)
+
     print("---- Set the networks - depending on the input flags ----")
 
     ### Choose Network size (as discussed, 1000, 2000, 5000 params) ==> Translate to size bracket (1 = 1000,2 = 2000,3 = 5000)
     # Depending on the size bracket, each network needs to adapt its width and depth (to get the corr. number of trainable parameters)
     trainableParamBracket = int(options.bracket)
     losses = int(options.losses)  # [mse(h), mse(alpha), mse(u), mse(flux)]
-    #inputDim = int(options.degreeBasis) + 1  # CAREFULL HERE; we adjusted for new net input sizes
+    # inputDim = int(options.degreeBasis) + 1  # CAREFULL HERE; we adjusted for new net input sizes
     inputDim = int(options.degreeBasis)
-    
+
     modelList = []  # list of models
     if options.author == "steffen" or options.author == "s" or options.author == "Steffen":
-        
-        modelList.append(ModelFrame(architecture=0,(options.nWidth,options.nLength), lossChoices=losses,
+
+        modelList.append(ModelFrame(architecture=0, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
                                     inputDim=inputDim))
-        
+
     elif options.author == "will" or options.author == "w" or options.author == "Will":
-        
-        modelList.append(ModelFrame(architecture=1, (options.nWidth,options.nLength), lossChoices=losses,
-                                    inputDim=inputDim,quad = Q))
-        
+
+        modelList.append(ModelFrame(architecture=1, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
+                                    inputDim=inputDim, quad=Q))
+
     else:  # default: Choose both
-        modelList.append(ModelFrame(architecture=0, (options.nWidth,options.nLength), lossChoices=losses,
+        modelList.append(ModelFrame(architecture=0, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
                                     inputDim=inputDim))
-        
-        modelList.append(ModelFrame(architecture=1, (options.nWidth,options.nLength), lossChoices=losses,
-                                    inputDim=inputDi,quad = Q))
+
+        modelList.append(ModelFrame(architecture=1, shapeTuple=(options.nWidth, options.nLength), lossChoices=losses,
+                                    inputDim=inputDim, quad=Q))
 
     print("---- Load the model weights, if flag is set ----")
     if (options.load):
@@ -145,7 +147,7 @@ def main():
     if (options.train):
         # Train all models in the list
         for model in modelList:
-            model.trainingProcedure([u_train, alpha_train, h_train,hess_train],\
+            model.trainingProcedure([u_train[:, 1], alpha_train[:, 1], h_train, hess_train], \
                                     options.curr)
         print("Training successfull")
     else:

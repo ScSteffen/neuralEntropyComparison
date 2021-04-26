@@ -231,32 +231,32 @@ class dualityTools:
 
             # If we have more than one alpha to evaluate
             if alpha.shape[0] > 1:
-                
+
                 inside = abs(alpha[:, 1]) < tol
                 outside = (1 - inside).astype(bool)
 
                 h_out = np.zeros((alpha.shape[0],), dtype=float)
 
-                h_out[outside] = 2 * np.exp(alpha[outside, 0]) * (\
-                        (alpha[outside, 0] - 2) * np.divide(np.sinh(alpha[outside, 1]), alpha[outside, 1]) + \
-                        np.cosh(alpha[outside, 1]))
+                h_out[outside] = 2 * np.exp(alpha[outside, 0]) * ( \
+                            (alpha[outside, 0] - 2) * np.divide(np.sinh(alpha[outside, 1]), alpha[outside, 1]) + \
+                            np.cosh(alpha[outside, 1]))
 
                 h_out[inside] = 2 * ((alpha[inside, 0] - 1) * np.exp(alpha[inside, 0]))
-                
+
                 # Previous return line: inside*(2*(a_0-1)*np.exp(a_0)) + outside*(2*np.exp(a_0))*((a_0-2)*np.divide(np.sinh(a_1),a_1) + np.cosh(a_1))
 
                 # If there is only one alpha to evaluate
-            elif alpha.shape[0] ==1:
+            elif alpha.shape[0] == 1:
 
                 if abs(alpha[1]) < tol:
                     # if alpha_1 small just set equal to alpha_1 = 0 limit
                     h_out = 2 * (alpha[0] - 1) * np.exp(alpha[0])
 
                 else:
-                    
-                    h_out = 2 * np.exp(alpha[0]) * (\
-                            (alpha[0] - 2) * np.divide(np.sinh(alpha[1]), alpha[1]) + np.cosh(alpha[1]))
-                
+
+                    h_out = 2 * np.exp(alpha[0]) * ( \
+                                (alpha[0] - 2) * np.divide(np.sinh(alpha[1]), alpha[1]) + np.cosh(alpha[1]))
+
             return h_out
 
         elif self.N >= 1:
@@ -291,37 +291,38 @@ class dualityTools:
         """
         if self.N == 1:
             if alpha.shape[0] == 1:
-#               #If only 1 sample
+                #               #If only 1 sample
                 if np.abs(alpha[1]) < tol:
                     u_0 = 2 * np.exp(alpha[0])
                     u_1 = 0
-                    
-                    moments_out = np.array([u_0,u_1])
+
+                    moments_out = np.array([u_0, u_1])
                 else:
-                    
 
                     u_0 = 2 * np.exp(alpha[0]) * (np.divide(np.sinh(alpha[1]), alpha[1]))
 
                     u_1 = 2 * np.exp(alpha[0]) * ((alpha[1] * np.cosh(alpha[1])) - np.sinh(alpha[1])) / (alpha[1] ** 2)
-                    
-                    moments_out = np.array([u_0,u_1])
-                    
+
+                    moments_out = np.array([u_0, u_1])
+
             elif alpha.shape[0] > 1:
-                #If more than 1 sample
-            
-                inside = np.abs(alpha[:,1]) < tol
-                    
+                # If more than 1 sample
+
+                inside = np.abs(alpha[:, 1]) < tol
+
                 outside = (1 - inside).astype(bool)
-                
-                moments_out = np.zeros((alpha.shape[0],2))
-                
-                moments_out[inside,0] = 2*np.exp(alpha[inside,0])
-                moments_out[inside,1] = 0
-                
-                moments_out[outside,0] = 2 * np.exp(alpha[outside,0]) * (np.divide(np.sinh(alpha[outside,1]),alpha[outside,1]))
-                moments_out[outside,1] = 2 * np.exp(alpha[outside,0]) * np.divide((alpha[outside,1] * np.cosh(alpha[outside,1]) -\
-                           np.sinh(alpha[outside,1])),np.power(alpha[outside,1],2))
-                
+
+                moments_out = np.zeros((alpha.shape[0], 2))
+
+                moments_out[inside, 0] = 2 * np.exp(alpha[inside, 0])
+                moments_out[inside, 1] = 0
+
+                moments_out[outside, 0] = 2 * np.exp(alpha[outside, 0]) * (
+                    np.divide(np.sinh(alpha[outside, 1]), alpha[outside, 1]))
+                moments_out[outside, 1] = 2 * np.exp(alpha[outside, 0]) * np.divide(
+                    (alpha[outside, 1] * np.cosh(alpha[outside, 1]) - \
+                     np.sinh(alpha[outside, 1])), np.power(alpha[outside, 1], 2))
+
             return moments_out
 
         elif self.N >= 1:
@@ -410,16 +411,16 @@ class dualityTools:
 
         elif self.N == 1:
             # Here the constraint can be expressed with elementary functions 
-            #so we use them.
+            # so we use them.
 
             if alpha.shape[0] > 1:
-                #Conditinal should select more than 1 sample
- 
+                # Conditinal should select more than 1 sample
+
                 a0_out = np.zeros((alpha.shape[0],), dtype=float)
 
                 alpha_in = np.abs(alpha[:]) < tol
-                
-                alpha_out = (1-alpha_in).astype(bool)
+
+                alpha_out = (1 - alpha_in).astype(bool)
 
                 a0_out[alpha_out] = -np.log(2)
 
@@ -461,7 +462,7 @@ class MN_Data:
         :param nS: number of sampling points
         :return: [u,alpha,h]
         """
-        
+
         if (self.N == 1):
             return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS])
         elif (self.N == 2):
@@ -472,7 +473,7 @@ class MN_Data:
         elif (self.N == 4):
             return self.make_train_data('uniform', epsilon, [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS],
                                         [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS])
-            
+
         return 0
 
     def make_train_data(self, strat, epsilon, *args, **kwargs):
@@ -490,58 +491,56 @@ class MN_Data:
                 - 'savedir' (type: str): full or relative 
                 path to filename for saved training data 
         """
-            
+
         self.train_strat = strat
 
         if len(args) != (self.N):
-            
             raise ValueError('Number of *args passed must match N, of form (N,min_alpha1,max_alpha1)')
 
         if self.N == 1:
-            
-            if self.train_strat == 'uniform':
 
+            if self.train_strat == 'uniform':
                 alpha1_info = args[0]
-                
+
                 self.train_param_dict = dict()
-                
+
                 self.train_param_dict['alpha1_min'] = alpha1_info[0]
                 self.train_param_dict['alpha1_max'] = alpha1_info[1]
                 self.train_param_dict['num_alpha1'] = alpha1_info[-1]
-                
-                linear_data = [np.linspace(self.train_param_dict['alpha1_min'],\
-                                           self.train_param_dict['alpha1_max'],\
+
+                linear_data = [np.linspace(self.train_param_dict['alpha1_min'], \
+                                           self.train_param_dict['alpha1_max'], \
                                            self.train_param_dict['num_alpha1'])]
-                
-                alpha1_mesh = np.linspace(self.train_param_dict['alpha1_min'],\
-                                                            self.train_param_dict['alpha1_max'],\
-                                                            self.train_param_dict['num_alpha1'])
+
+                alpha1_mesh = np.linspace(self.train_param_dict['alpha1_min'], \
+                                          self.train_param_dict['alpha1_max'], \
+                                          self.train_param_dict['num_alpha1'])
 
                 alpha0_vals = self.DT.alpha0surface(alpha1_mesh)
-                
-                alpha0_vals = np.reshape(alpha0_vals,(alpha0_vals.shape[0],1))
-                alpha1_mesh = np.reshape(alpha1_mesh,(alpha1_mesh.shape[0],1))
-                
+
+                alpha0_vals = np.reshape(alpha0_vals, (alpha0_vals.shape[0], 1))
+                alpha1_mesh = np.reshape(alpha1_mesh, (alpha1_mesh.shape[0], 1))
+
                 alpha_data = np.hstack([alpha0_vals, alpha1_mesh])
 
                 moment_data = self.DT.moment_vector(alpha_data)
 
                 entropy_data = self.DT.entropy(alpha_data)
 
-                total_data = np.hstack([moment_data,alpha_data])
+                total_data = np.hstack([moment_data, alpha_data])
 
-                total_data = np.hstack([total_data,entropy_data[:, np.newaxis]])
+                total_data = np.hstack([total_data, entropy_data[:, np.newaxis]])
 
-                data_cols = [*['u' + str(i) for i in range(0, self.N + 1)],\
-                                    *['alpha' + str(i) for i in range(0, self.N + 1)],'h']
-                
-                #Copied here from N >= 1 case
+                data_cols = [*['u' + str(i) for i in range(0, self.N + 1)], \
+                             *['alpha' + str(i) for i in range(0, self.N + 1)], 'h']
+
+                # Copied here from N >= 1 case
                 del_indices = self.check_realizable(moment_data, epsilon)
                 total_data = total_data[del_indices]
 
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
-                #print(tabulate(df_data, headers='keys', tablefmt='psql'))
+                # print(tabulate(df_data, headers='keys', tablefmt='psql'))
 
         elif self.N >= 1:
 
@@ -560,7 +559,7 @@ class MN_Data:
                                                    self.train_param_dict["alpha" + str(i) + "_max"], \
                                                    self.train_param_dict["num_alpha" + str(i)]))
 
-                #Evaluate alpha mesh in vectorized manner
+                # Evaluate alpha mesh in vectorized manner
 
                 mesh = np.meshgrid(*linear_data)
                 alpha_data = np.vstack(list(map(np.ravel, mesh)))
@@ -574,12 +573,12 @@ class MN_Data:
 
                 entropy_data = self.DT.entropy(alpha_data)
 
-                total_data = np.hstack([moment_data,alpha_data])
+                total_data = np.hstack([moment_data, alpha_data])
 
-                total_data = np.hstack([total_data,entropy_data[:, np.newaxis]])
+                total_data = np.hstack([total_data, entropy_data[:, np.newaxis]])
 
-                data_cols = [*['u' + str(i) for i in range(0, self.N + 1)],\
-                                    *['alpha' + str(i) for i in range(0, self.N + 1)],'h']
+                data_cols = [*['u' + str(i) for i in range(0, self.N + 1)], \
+                             *['alpha' + str(i) for i in range(0, self.N + 1)], 'h']
 
                 ## remove elements too close to the boundary
                 del_indices = self.check_realizable(moment_data, epsilon)
@@ -588,78 +587,81 @@ class MN_Data:
                 # print to dataframe
                 df_data = pd.DataFrame(total_data, columns=data_cols)
 
-                #print(tabulate(df_data, headers='keys', tablefmt='psql'))
-                
+                # print(tabulate(df_data, headers='keys', tablefmt='psql'))
+
                 if 'savedir' in kwargs:
                     self.train_data_path = kwargs['savedir']
-                    df_data.to_csv(self.train_data_path,index = False)
+                    df_data.to_csv(self.train_data_path, index=False)
 
                 return [moment_data, alpha_data, entropy_data[:, np.newaxis]]
+
+        # print to file 
+        df_data.to_csv("data/1D/Monomial_M" + str(self.N) + ".csv", index=False)
+        return [total_data[:, 0:self.N + 1], total_data[:, self.N + 1:2 * self.N + 2], total_data[:, 2 * self.N + 2:]]
 
     def make_test_data(self, strat, *args, **kwargs):
 
         self.test_strat = strat
 
         if self.N == 1:
-            
+
             self.test_param_dict = dict()
 
             linear_data = []
-            
-            #To do (Will): only nuance here is the shape of the arrays 
-            
+
+            # To do (Will): only nuance here is the shape of the arrays
+
             self.test_param_dict["num_u0"] = args[0][-1]
             self.test_param_dict["u0_min"] = args[0][0]
             self.test_param_dict["u0_max"] = args[0][1]
             linear_data.append(np.linspace(self.test_param_dict["u0_min"], \
                                            self.test_param_dict["u0_max"], \
                                            self.test_param_dict["num_u0"]))
-            
+
             self.test_param_dict['num_alpha1'] = args[1][-1]
             self.test_param_dict['alpha1_min'] = args[1][0]
             self.test_param_dict['alpha1_max'] = args[1][1]
-            linear_data.append(np.linspace(self.test_param_dict['alpha1_min'],\
-                                       self.test_param_dict['alpha1_max'],\
-                                       self.test_param_dict['num_alpha1']))
-            
-            
+            linear_data.append(np.linspace(self.test_param_dict['alpha1_min'], \
+                                           self.test_param_dict['alpha1_max'], \
+                                           self.test_param_dict['num_alpha1']))
+
             u0_mesh = np.linspace(self.test_param_dict["u0_min"], \
-                                      self.test_param_dict["u0_max"], \
-                                      self.test_param_dict["num_u0"])
-            
-            alpha1_mesh = np.linspace(self.test_param_dict['alpha1_min'],\
-                                                        self.test_param_dict['alpha1_max'],\
-                                                        self.test_param_dict['num_alpha1'])
-    
+                                  self.test_param_dict["u0_max"], \
+                                  self.test_param_dict["num_u0"])
+
+            alpha1_mesh = np.linspace(self.test_param_dict['alpha1_min'], \
+                                      self.test_param_dict['alpha1_max'], \
+                                      self.test_param_dict['num_alpha1'])
+
             alpha0_vals = self.DT.alpha0surface(alpha1_mesh)
-            
+
             alpha0_vals = np.hstack([alpha0_vals + np.log(u0_mesh[i]) for i in range(len(u0_mesh))])
             alpha1_data = np.hstack([alpha1_mesh for i in range(len(u0_mesh))])
-            
-            alpha0_vals  = np.reshape(alpha0_vals,(alpha0_vals.shape[0],1))
-            alpha1_data = np.reshape(alpha1_data,(alpha1_data.shape[0],1))
-            
+
+            alpha0_vals = np.reshape(alpha0_vals, (alpha0_vals.shape[0], 1))
+            alpha1_data = np.reshape(alpha1_data, (alpha1_data.shape[0], 1))
+
             alpha_data = np.hstack([alpha0_vals, alpha1_data])
-    
+
             moment_data = self.DT.moment_vector(alpha_data)
-    
+
             entropy_data = self.DT.entropy(alpha_data)
-    
-            total_data = np.hstack([moment_data,alpha_data])
-    
-            total_data = np.hstack([total_data,entropy_data[:, np.newaxis]])
-    
-            data_cols = [*['u' + str(i) for i in range(0, N + 1)],\
-                                *['alpha' + str(i) for i in range(0, N + 1)],'h']
-            
-            #Copied here from N >= 1 case
+
+            total_data = np.hstack([moment_data, alpha_data])
+
+            total_data = np.hstack([total_data, entropy_data[:, np.newaxis]])
+
+            data_cols = [*['u' + str(i) for i in range(0, N + 1)], \
+                         *['alpha' + str(i) for i in range(0, N + 1)], 'h']
+
+            # Copied here from N >= 1 case
             """
             del_indices = self.check_realizable(moment_data, epsilon)
             total_data = total_data[del_indices]
             """
-    
+
             df_data = pd.DataFrame(total_data, columns=data_cols)
-    
+
             print(tabulate(df_data, headers='keys', tablefmt='psql'))
 
 
@@ -692,44 +694,43 @@ class MN_Data:
                                       self.test_param_dict["u0_max"], \
                                       self.test_param_dict["num_u0"])
 
-
                 mesh = np.meshgrid(*linear_data[1:])
                 alpha_data = np.vstack(list(map(np.ravel, mesh)))
                 alpha_data = alpha_data.T
 
                 alpha0_vals = self.DT.alpha0surface(alpha_data)
 
-                #Want n_alpha_samples \times n_u0_samples to be the size of alpha0_vals
-                
-                #We need to use hstack here to sequence these vectors since they are 1-d 
+                # Want n_alpha_samples \times n_u0_samples to be the size of alpha0_vals
+
+                # We need to use hstack here to sequence these vectors since they are 1-d
                 alpha0_vals = np.hstack([alpha0_vals + np.log(u0_mesh[i]) for i in range(len(u0_mesh))])
-                
-                #Have to reshape as 2d array in order to hstack with another 2d array 
-                alpha0_vals  = np.reshape(alpha0_vals,(alpha0_vals.shape[0],1))
-                
+
+                # Have to reshape as 2d array in order to hstack with another 2d array
+                alpha0_vals = np.reshape(alpha0_vals, (alpha0_vals.shape[0], 1))
+
                 alpha_data = np.vstack([alpha_data for i in range(len(u0_mesh))])
-                #Might need to reshape alpha0_vals for this 
+                # Might need to reshape alpha0_vals for this
                 alpha_data = np.hstack([alpha0_vals, alpha_data])
 
                 moment_data = self.DT.moment_vector(alpha_data)
 
                 entropy_data = self.DT.entropy(alpha_data)
 
-                #Must make the entropy data fully 2d in order to hstack with other 2d arrays
+                # Must make the entropy data fully 2d in order to hstack with other 2d arrays
                 entropy_data = entropy_data[:, np.newaxis]
-                
-                total_data = np.hstack([moment_data,alpha_data])
 
-                total_data = np.hstack([total_data,entropy_data])
+                total_data = np.hstack([moment_data, alpha_data])
 
-                data_cols = [*['u' + str(i) for i in range(0, N + 1)],\
-                               *['alpha' + str(i) for i in range(0, N + 1)],'h']
+                total_data = np.hstack([total_data, entropy_data])
+
+                data_cols = [*['u' + str(i) for i in range(0, N + 1)], \
+                             *['alpha' + str(i) for i in range(0, N + 1)], 'h']
 
                 df_data = pd.DataFrame(total_data, columns=data_cols)
-                
+
                 if 'savedir' in kwargs:
                     self.test_data_path = kwargs['savedir']
-                    df_data.to_csv(self.test_data_path,index = False)
+                    df_data.to_csv(self.test_data_path, index=False)
 
                 # Sample name for data: Monomial_M2_1d.csv or Monomial_M2_1d_normal.csv
 
@@ -785,5 +786,5 @@ if __name__ == "__main__":
     Q = getquad('lgwt', 10, -1, 1, N)
     epsilon = 0.03
     DataClass = MN_Data(N, Q, 'M_N')
-    #DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])
-    DataClass.make_test_data('uniform',[1,3,10],[-10,10,100])
+    # DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])
+    DataClass.make_test_data('uniform', [1, 3, 10], [-10, 10, 100])

@@ -6,13 +6,15 @@ Date: 9.04.2021
 
 ### imports
 import tensorflow  as tf
-from os import path, makedirs, walk
+from os import path, makedirs
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint
 ### imports of own scripts
 from src.IcnnClosure import createIcnnClosure
 from src.EcnnClosure import createEcnnClosure, HaltWhen
+
+import numpy as np
 
 """
 This callback needs to be moved but is useful for hitting a certain threshold 
@@ -21,42 +23,42 @@ This callback needs to be moved but is useful for hitting a certain threshold
 
 class ModelFrame:
 
-    def __init__(self, architecture=0, shapeTuple = (20,5), lossChoices=0, inputDim=1,quad = None):
+    def __init__(self, architecture=0, shapeTuple=(20, 5), lossChoices=0, inputDim=1, quad=None):
         """constructor"""
-        
+
         """
         Create quadrature object and pass to createxxxClosure
         """
-        
+
         self.nWidth = shapeTuple[0]
         self.nLength = shapeTuple[1]
-        
+
         self.architecture = architecture
-        
+
         self.lossChoices = lossChoices
-        
+
         self.N = inputDim
 
-        self.saveFolder = "models/losscombi_" + str(lossChoices) + "/" + str(trainableParamBracket)
-        
+        self.saveFolder = "models/losscombi_" + str(lossChoices)
+
         if (architecture == 0):  # Steffen (synonymous with modelchoice) ==> ICNN
-            
+
             self.saveFolder = self.saveFolder + "/icnn"
             self.model = createIcnnClosure(inputDim, shapeTuple,
-                                           lossChoices = lossChoices)  # @Steffen: Model creation Function here
+                                           lossChoices=lossChoices)  # @Steffen: Model creation Function here
 
-        elif (architecture ==1):  # Will: (model choice is ECNN)
-        
+        elif (architecture == 1):  # Will: (model choice is ECNN)
+
             self.saveFolder = self.saveFolder + "/ecnn"
-            self.model = createEcnnClosure(inputDim = inputDim, shapeTuple = (self.nWidth,self.nLength),\
-                                           lossChoices = lossChoices,Quad = quad)  # @Will: Model creation Function here
-            
-        #Alternate behavior: 
-            #return uncompiled model and compile here (i.e. assign the losses), possibly changing
-            #ICNN to accomodate hessian loss (but with weight zero)
-            
+            self.model = createEcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength), \
+                                           lossChoices=lossChoices, Quad=quad)  # @Will: Model creation Function here
+
+        # Alternate behavior:
+        # return uncompiled model and compile here (i.e. assign the losses), possibly changing
+        # ICNN to accomodate hessian loss (but with weight zero)
+
         else:
-            
+
             raise ValueError('architecture must be zero or 1')
 
     def showModel(self):
@@ -70,7 +72,7 @@ class ModelFrame:
         return 0
 
     def trainingProcedure(self, trainData, curr):
-        
+
         """
         Will's Note:
             
@@ -86,88 +88,85 @@ class ModelFrame:
         
         Can 2 and 3 be done with the parser?
         """
-        
-        u_train,alpha_train,h_train,hess_train = trainData
-        
+
+        u_train, alpha_train, h_train, hess_train = trainData
+
         ### TODO
         #   @WILL
         if curr == 0:
-            
-            #We only use this at the moment
-            num_epochs = int(1.5*(1e+04))
+
+            # We only use this at the moment
+            num_epochs = int(1.5 * (1e+04))
             initial_lr = float(1e-3)
             drop_rate = (num_epochs / 3)
-            
-            
-            mt_patience = int(num_epochs/ 10)
-            min_delta = stop_tol / 10
-            
             stop_tol = 1e-7
+            mt_patience = int(num_epochs / 10)
+            min_delta = stop_tol / 10
             batch_size = int(100)
-            
+
         elif curr == 1:
-            
+
             num_epochs = 1000
             batch_size = 128
 
             initial_lr = float(1e-3)
-            mt_patience = int(num_epochs/ 10)
+            mt_patience = int(num_epochs / 10)
             stop_tol = 1e-8
             min_delta = stop_tol / 10
             drop_rate = (num_epochs / 3)
-            
+
         elif curr == 2:
-            
+
             num_epochs = 1000
             batch_size = 128
 
             initial_lr = float(1e-3)
-            mt_patience = int(num_epochs/ 10)
+            mt_patience = int(num_epochs / 10)
             stop_tol = 1e-8
             min_delta = stop_tol / 10
             drop_rate = (num_epochs / 3)
-            
-        
+
         def step_decay(epoch):
-            
-            step_size = initial_lr*np.power(10,(-epoch/drop_rate))
-            
-            return step_size 
-        
-        #this callback good to go 
+
+            step_size = initial_lr * np.power(10, (-epoch / drop_rate))
+
+            return step_size
+
+            # this callback good to go
+
         LR = LearningRateScheduler(step_decay)
-        
-        MC =  ModelCheckpoint(self.saveFolder+'/best_model.h5', \
-                              monitor = 'val_output_'+str(self.lossChoices)+'_loss',\
-                              save_best_only = True,\+
-                              save_weights_only = False,\
-                              mode = 'min',verbose=1)
-        
-        HW = HaltWhen('val_output_'+str(self.lossChoices)+'_loss',stop_tol)
-        
-        ES = EarlyStopping(monitor = 'val_output_'+str(self.lossChoices)+'_loss',mode = 'min',\
-                              verbose = 1,patience = mt_patience,\
-                              min_delta = 1e-8)
-        
+
+        MC = ModelCheckpoint(self.saveFolder + '/best_model.h5', \
+                             monitor='val_output_' + str(self.lossChoices) + '_loss', \
+                             save_best_only=True, \
+                             save_weights_only=False, \
+                             mode='min', verbose=1)
+
+        HW = HaltWhen('val_output_' + str(self.lossChoices) + '_loss', stop_tol)
+
+        ES = EarlyStopping(monitor='val_output_' + str(self.lossChoices) + '_loss', mode='min', \
+                           verbose=1, patience=mt_patience, \
+                           min_delta=1e-8)
+
         CSV_Logger = self.createCSVLoggerCallback()
-        
-        callback_list = [MC,ES,HW,CS,LR,CSV_Logger]
-      
+
+        callback_list = [MC, ES, HW, LR, CSV_Logger]
+
         """
         Model bool / string to switch training for Steffen or Will
         because Will needs 1 more argument - the hessian target values 
-        """"
-        if model.arch == 'icnn':
-        
+         """
+        if self.model.arch == 'icnn':
+
             moment_history = self.model.fit(x=u_train, y=[h_train, alpha_train, u_train],
                                             validation_split=0.20,
-                                            epochs=num_epochs, batch_size=batch_size, callbacks=callbackList)
-        elif model.arch = 'ecnn':
-            
-            moment_history = self.model.fit(x=u_train, y=[h_train, alpha_train, u_train,hess_train],
+                                            epochs=num_epochs, batch_size=batch_size, callbacks=callback_list)
+        elif self.model.arch == 'ecnn':
+
+            moment_history = self.model.fit(x=u_train, y=[h_train, alpha_train, u_train, hess_train],
                                             validation_split=0.20,
-                                            epochs=num_epochs, batch_size=batch_size, callbacks=callbackList)
-            
+                                            epochs=num_epochs, batch_size=batch_size, callbacks=callback_list)
+
         return moment_history
 
     def createCSVLoggerCallback(self):
@@ -195,6 +194,7 @@ class ModelFrame:
         # TODO
         # @WIll
         return 0
-    
+
+
 if __name__ == "__main__":
-    pass 
+    pass
