@@ -27,33 +27,33 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 
-def createEcnnClosure(inputDim,trainableParamBracket,model_losses,**kwargs):
+def createEcnnClosure(inputDim,shapeTuple,lossChoices,Quad = None,**kwargs):
     
     """
-    What needs to be passed via trainableParamBracket is the following:
-        N = inputDim
-        nNode
-        nLayers
-        Q = Quadrature-Object
-        loss choices: a set of bools telling us which losses to enforce 
-        
-    I've implemented this via kwargs for now, but would you be able to make this 
-    switch over to trainableParamBracket? I have no clue how this argument works. 
-    
-    Also, is it correct that N  = inputDim?
     
     """
+   
     N = inputDim
-    nNode = kwargs['nNode']
-    nLayer = kwargs['nLayer']
     
-    if N > 1:
-        #When N = 1 we don't need quadrature. Otherwise yes. 
-        Quad = kwargs['Q']
+    #These will be solved via new argument to trainableParamBracket 
+    nNode,nLayer = shapeTuple
+        
+    """
+    This bool set is determined by model_losses; model_losses is passed as 
+    an integer from the 'options' parser in main.py 
+    """
+    if lossChoices == 0:
+        loss_choices = [True,False,False,False]
+        
+    elif lossChoices ==1:
+        
+        loss_choices = [True,False,True,False]
+        
+    elif lossChoices == 2:
+        #This is identical, as of now, to lossChoices == 1
+        loss_choices = [True,False,True,False]
     
-    enforce_func,enforce_grad,enforce_moment,enforce_conv = kwargs['loss_choices']
-    
-    loss_weights = [float(enforce_func),float(enforce_grad),float(enforce_moment),float(enforce_conv)]
+    loss_weights = [float(x) for x in loss_choices]
     
     """
     #1. Define a keras model via subclassing
@@ -171,6 +171,9 @@ class M1ConvexNet(tf.keras.Model):
         
         #Specify architecture and input shape
         
+        #Will added this so we can ask the model what type it is later 
+        self.arch = 'ecnn'
+        
         self.inputShape = inputShape
         self.nNode = nNode
         self.nLayer = nLayer
@@ -194,8 +197,6 @@ class M1ConvexNet(tf.keras.Model):
         #Define the input layer, hidden layers, and output layer
         
         """
-        
-        
         
         #Define the input layer, hidden layers, and output layer
         self.input_layer = Dense(nNode, use_bias = True,kernel_initializer =\
@@ -545,6 +546,26 @@ class M2ConvexNet(tf.keras.Model):
          
         return [net,alpha_out,self.moment_func(alpha_out),detpa]
 
+class HaltWhen(tf.keras.callbacks.Callback):
+    def __init__(self,quantity,tol):
+        """
+        Should be used in conjunction with 
+        the saving criterion for the model; otherwise 
+        training will stop without saving the model with quantity <= tol
+        """
+        super(HaltWhen,self).__init__()
+        if type(quantity) == str:
+            self.quantity = quantity
+        else:
+            raise TypeError('HaltWhen(quantity,tol); quantity must be a string for a monitored quantity')
+        self.tol = tol
+    def on_epoch_end(self,epoch,logs = None):
+        if epoch > 1:
+            if logs.get(self.quantity) < self.tol:
+                print('\n\n',self.quantity,' has reached',logs.get(self.quantity),' < = ',self.tol,'. End Training.')
+                self.model.stop_training = True
+        else:
+            pass
 
 if __name__ == "__main__":
     
