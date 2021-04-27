@@ -8,6 +8,7 @@ import tensorflow as tf
 from tensorflow import Tensor
 from tensorflow import keras
 from src import math
+import numpy as np
 
 
 def createIcnnClosure(inputDim, shapeTuple, lossChoices, Quad=None):
@@ -61,9 +62,13 @@ def createIcnnClosure(inputDim, shapeTuple, lossChoices, Quad=None):
 def createModel(inputDim, modelWidth, modelDepth, loss_weights):
     layerDim = modelWidth
 
-    # Weight initializer #TODO: unify initalizer with Will!
-    initializerNonNeg = tf.keras.initializers.RandomUniform(minval=0, maxval=0.5, seed=None)
-    initializer = tf.keras.initializers.RandomUniform(minval=-0.5, maxval=0.5, seed=None)
+    # 1. This is a modified Kaiming inititalization with a first-order taylor expansion of the
+    # softplus activation function (see S. Kumar "On Weight Initialization in
+    # Deep Neural Networks").
+
+    # Extra factor of (1/1.1) added inside sqrt to suppress inf for 1 dimensional inputs
+    input_stddev = np.sqrt((1 / 1.1) * (1 / inputDim) * (1 / ((1 / 2) ** 2)) * (1 / (1 + np.log(2) ** 2)))
+    hidden_stddev = np.sqrt((1 / 1.1) * (1 / modelWidth) * (1 / ((1 / 2) ** 2)) * (1 / (1 + np.log(2) ** 2)))
 
     def convexLayer(layerInput_z: Tensor, netInput_x: Tensor, layerIdx=0) -> Tensor:
         """
@@ -73,13 +78,15 @@ def createModel(inputDim, modelWidth, modelDepth, loss_weights):
         # Weighted sum of previous layers output plus bias
         weightedNonNegSum_z = keras.layers.Dense(layerDim, kernel_constraint=keras.constraints.NonNeg(),
                                                  activation=None,
-                                                 kernel_initializer=initializerNonNeg,
+                                                 kernel_initializer=keras.initializers.RandomNormal(mean=0.,
+                                                                                                    stddev=hidden_stddev),
                                                  use_bias=True, bias_initializer='zeros',
                                                  name='non_neg_component_' + str(layerIdx)
                                                  )(layerInput_z)
         # Weighted sum of network input
         weightedSum_x = keras.layers.Dense(layerDim, activation=None,
-                                           kernel_initializer=initializer,
+                                           kernel_initializer=keras.initializers.RandomNormal(mean=0.,
+                                                                                              stddev=hidden_stddev),
                                            use_bias=False, name='dense_component_' + str(layerIdx)
                                            )(netInput_x)
         # Wz+Wx+b
@@ -96,14 +103,16 @@ def createModel(inputDim, modelWidth, modelDepth, loss_weights):
     def convexLayerOutput(layerInput_z: Tensor, netInput_x: Tensor) -> Tensor:
         # Weighted sum of previous layers output plus bias
         weightedNonNegSum_z = keras.layers.Dense(1, kernel_constraint=keras.constraints.NonNeg(), activation=None,
-                                                 kernel_initializer=initializerNonNeg,
+                                                 kernel_initializer=keras.initializers.RandomNormal(mean=0.,
+                                                                                                    stddev=hidden_stddev),
                                                  use_bias=True,
                                                  bias_initializer='zeros'
                                                  # name='in_z_NN_Dense'
                                                  )(layerInput_z)
         # Weighted sum of network input
         weightedSum_x = keras.layers.Dense(1, activation=None,
-                                           kernel_initializer=initializer,
+                                           kernel_initializer=keras.initializers.RandomNormal(mean=0.,
+                                                                                              stddev=hidden_stddev),
                                            use_bias=False
                                            # name='in_x_Dense'
                                            )(netInput_x)
@@ -118,7 +127,9 @@ def createModel(inputDim, modelWidth, modelDepth, loss_weights):
 
     ### build the core network with icnn closure architecture ###
     input_ = keras.Input(shape=(inputDim,))
-    hidden = keras.layers.Dense(layerDim, activation="softplus", kernel_initializer=initializer,
+    hidden = keras.layers.Dense(layerDim, activation="softplus",
+                                kernel_initializer=keras.initializers.RandomNormal(mean=0.,
+                                                                                   stddev=input_stddev),
                                 bias_initializer='zeros', name="first_dense"
                                 )(input_)
     for idx in range(0, modelDepth):
