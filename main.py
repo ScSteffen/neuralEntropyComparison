@@ -30,30 +30,30 @@ def main():
                       help="0 : icnn\n 1 : ecnn\n 2 : both", metavar="AUTHOR")
     parser.add_option("-b", "--bracket", dest="bracket", default=1,
                       help="size bracket of network parameters", metavar="BRACKET")
+    parser.add_option("-c", "--curriculum", dest="curr", default=0, \
+                      help="integer between 0 and 2 for learning curriculum", \
+                      metavar="CURRICULUM")
     parser.add_option("-d", "--degreeBasis", dest="degreeBasis", default=1,
                       help="degree of the basis",
                       metavar="DEGREE")
-    parser.add_option("-t", "--train", dest="train", default=0,
-                      help="train the models", metavar="TRAIN")
     parser.add_option("-e", "--evalutation", dest="evaluation", default=1,
                       help="evaluation and error analysis", metavar="EVALUATE")
+    parser.add_option("-l", "--load", dest="load", default=0,
+                      help="0: Dont load weights\n1:Load weights", metavar="LOAD")
     parser.add_option("-o", "--lossCombi", dest="losses", default=0,
                       help="combination of model losses (objective functions): \n"
                            "1 : [h] \n"
                            "2:  [h,alpha] \n"
                            "3 : [h,u] \n"
                            "4:  [h,u,flux]", metavar="LOSSES")
-    # Will added these recently (if they don't work he will fix)
-
+    parser.add_option("-t", "--train", dest="train", default=0,
+                      help="train the models", metavar="TRAIN")
     parser.add_option("-w", "--width", dest='nWidth', default=10, \
                       help="integer for input shape of dense hidden layers; default 10", \
                       metavar="WIDTH")
     parser.add_option("-s", "--length", dest='nLength', default=0, \
                       help="integer for number of dense hidden layers; default 0", \
                       metavar="LENGTH")
-    parser.add_option("-c", "--curriculum", dest="curr", default=0, \
-                      help="integer between 0 and 2 for learning curriculum", \
-                      metavar="CURRICULUM")
 
     """
     Add options to parser for 
@@ -64,9 +64,6 @@ def main():
     Parser add options, let's call it '-c', for 
     choice of epochs, callbacks, and learning-drop rate.
     """
-
-    parser.add_option("-l", "--load", dest="load", default=0,
-                      help="load model weights", metavar="EVALUATE")
 
     (options, args) = parser.parse_args()
 
