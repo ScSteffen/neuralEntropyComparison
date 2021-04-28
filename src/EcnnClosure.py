@@ -80,12 +80,14 @@ def createEcnnClosure(inputDim, shapeTuple, lossChoices, Quad=None):
         #2. "Build" the model. Here, calling model.predict() is used as an alternative to build. 
         #this is valid in the subclassing approach and, das I'm aware, elsewhere too. 
         """
-        test_point = np.array([0.5, 0.7, -0.5, -0.7, 0.01, -0.01, 0.9, -0.9], dtype=float)
-        test_point = test_point.reshape((test_point.shape[0], 1))
-        test_point = tf.constant(test_point, dtype=tf.float32)
-        test_output = model.predict(test_point)
-        print('\n\n CHECK - Here is output of model.predict() for M1ConvexNet:\n ', \
-              test_output, '\n\n')
+        # test_point = np.array([0.5, 0.7, -0.5, -0.7, 0.01, -0.01, 0.9, -0.9], dtype=float)
+        # test_point = test_point.reshape((test_point.shape[0], 1))
+        # test_point = tf.constant(test_point, dtype=tf.float32)
+        # test_output = model.predict(test_point)
+        # print('\n\n CHECK - Here is output of model.predict() for M1ConvexNet:\n ', \
+        #      test_output, '\n\n')
+        batchSize = 2  # dummy entry
+        model.build(input_shape=(batchSize, N))
 
     """
     #3. Define the loss functions and their weights:
