@@ -46,8 +46,6 @@ class ModelFrame:
         self.N = inputDim
         
         self.DT = dualityTools('M_N',1,None)
-        
-        self.nParams = 5
 
         self.saveFolder = "models/losscombi_" + str(lossChoices) + "/width" + str(shapeTuple[0]) + "_depth" + str(
             shapeTuple[1])
@@ -57,12 +55,16 @@ class ModelFrame:
             self.saveFolder = self.saveFolder + "/icnn"
             self.model = createIcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength),
                                            lossChoices=lossChoices, Quad=quad)
+            
+            self.nParams = 5
 
         elif (architecture == 1):  # Will: (model choice is ECNN)
 
             self.saveFolder = self.saveFolder + "/ecnn"
             self.model = createEcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength),
                                            lossChoices=lossChoices, Quad=quad)
+            
+            self.nParams = (self.nLength + 3)*(self.nWidth) +  self.nLength*(self.nWidth**2) + 1
 
             # Alternate behavior:
         # return uncompiled model and compile here (i.e. assign the losses), possibly changing
@@ -198,25 +200,70 @@ class ModelFrame:
             #this is a variable to be cosnstructed from the loss combination and shape.
             #Should be a unique network identifier which we have already loaded into the dataframe
             
+            """
+            Get the train data
+            """
             u_train_true,alpha_train_true,h_train_true = trainData
-            hess_train_true = np.zeros((u_train_true.shape[0],))
-            
-            #Cheap way to reshape 
+            #hess_train_true = np.zeros((u_train_true.shape[0],))
             u1_train_true = u_train_true[:,1][:,np.newaxis]
+            
+            
+            """
+            Get the test data
+            """
+            #Get the testing data 
+            u_test_true,alpha_test_true,h_test_true = testData
+            u_test_true_proj = np.divide(u_test_true[:,1],u_test_true[:,0])[:,None]
             
             #The signatures of our functions are just slightly different so, 
             #we use switching here 
             
             if self.model.arch == 'ecnn':
                 
-                #Calculate training predictions 
+                """
+                Calculate Training Predictions
+                """
                 h_train_pred,alpha_train_pred,u_train_pred,hess_train_pred = self.model.predict(u1_train_true)
                 
                 hess_train_pred = hess_train_pred[:,0]
                 num_nonconv_train = np.sum((hess_train_pred < 0))
+                
+                """
+                Calculate test predictions
+                """
+                h_test_pred_proj,alpha_test_pred_proj,u_toss,conv_pred_test_proj = self.model.predict(u_test_true_proj)
+                h_test_pred_proj = h_test_pred_proj.reshape((h_test_pred_proj.shape[0],))
+                
+                h_test_pred = u_test_true[:,0]*(h_test_pred_proj + np.log(u_test_true[:,0]))
+                alpha_test_pred = alpha_test_pred_proj[:,:]
+                alpha_test_pred[:,0] = alpha_test_pred[:,0] + np.log(u_test_true[:,0])
+                
+                u_test_pred = self.model.moment_func(alpha_test_pred).numpy()
+                
+                num_nonconv_test = np.sum((conv_pred_test_proj[:,0] < 0))
+                
+                """
+                u_true_test_proj  = np.divide(u_true_test_2d[:,1],u_true_test_2d[:,0])[:,None]
+                h_pred_test_proj,alpha_pred_test_proj,u_toss,conv_pred_test_proj = model.predict(u_true_test_proj)
+                
+                h_pred_test_proj = h_pred_test_proj.reshape((h_pred_test_proj.shape[0],))
+                h_pred_test_2d = u_true_test_2d[:,0]*(h_pred_test_proj + np.log(u_true_test_2d[:,0]))
+                
+                alpha_pred_test_2d = alpha_pred_test_proj[:,:]
+                alpha_pred_test_2d[:,0] = alpha_pred_test_2d[:,0] + np.log(u_true_test_2d[:,0])
+                
+                u_pred_test_2d = model.moment_func(alpha_pred_test_2d).numpy()
+                
+                true_vals = [h_true_test_2d,alpha_true_test_2d,u_true_test_2d]
+                pred_vals = [h_pred_test_2d,alpha_pred_test_2d,u_pred_test_2d,conv_pred_test_proj]
+                """
             
             elif self.model.arch == 'icnn':
                 
+                
+                """
+                Calculate Training Predictions
+                """
                 h_train_pred,alpha_train_pred,toss_ = self.model.predict(u1_train_true)
                 
                 #May need to reshape and stack first argument 
@@ -225,51 +272,101 @@ class ModelFrame:
                 u_train_pred = self.DT.moment_vector(alpha_train_pred)
                 num_nonconv_train = 0
                 
-                    
-                    #Calculate training errors (This can be wrapped but we are doing manually here)
+                """
+                Calculate test predictions
+                """
+                
+                h_test_pred_proj,alpha_test_pred_proj,toss_ = self.model.predict(u_test_true_proj)
+                h_test_pred_proj = h_test_pred_proj.reshape((h_test_pred_proj.shape[0],))
+                
+                h_test_pred = u_test_true[:,0]*(h_test_pred_proj + np.log(u_test_true[:,0]))
+                alpha0_test_pred_proj = self.DT.alpha0surface(alpha_test_pred_proj[:,0])
+                alpha_test_pred_proj  = np.hstack([alpha0_test_pred_proj[:,np.newaxis],alpha_test_pred_proj])
+                alpha_test_pred = alpha_test_pred_proj[:,:]
+                alpha_test_pred[:,0] = alpha_test_pred[:,0] + np.log(u_test_true[:,0])
+                u_test_pred = self.DT.moment_vector(alpha_test_pred)
+                num_nonconv_test = 0
+                
+            """
+            Calculate training errors (This can be wrapped but we are doing manually here)
+            """
+            
             h_train_pred = h_train_pred.reshape((h_train_pred.shape[0],1))
             h_train_true = h_train_true.reshape((h_train_true.shape[0],1))
             
-            L2_h = np.mean(np.square(h_train_pred-h_train_true),axis = 0)[0]
-            L2_hrel = np.sum(np.square(h_train_pred-h_train_true),axis = 0)[0] / np.sum(np.square(h_train_true),axis = 0)[0]
+            train_L2_h = np.mean(np.square(h_train_pred-h_train_true),axis = 0)[0]
+            train_L2_hrel = np.sum(np.square(h_train_pred-h_train_true),axis = 0)[0] / np.sum(np.square(h_train_true),axis = 0)[0]
             
-            L2_u = np.mean(np.sum(np.square(u_train_pred-u_train_true),axis = 1))
-            L2norm_u = np.mean(np.sum(np.square(u_train_true),axis =1))
-            L2_urel = L2_u / L2norm_u
+            train_L2_u = np.mean(np.sum(np.square(u_train_pred-u_train_true),axis = 1))
+            train_L2norm_u = np.mean(np.sum(np.square(u_train_true),axis =1))
+            train_L2_urel = train_L2_u / train_L2norm_u
             
-            L2_u0 = np.mean(np.square(u_train_pred[:,0]-u_train_true[:,0]))
-            u0_norm = np.mean(np.square(u_train_true[:,0]))
-            L2_u0rel = L2_u0 / u0_norm
+            train_L2_u0 = np.mean(np.square(u_train_pred[:,0]-u_train_true[:,0]))
+            train_u0_norm = np.mean(np.square(u_train_true[:,0]))
+            train_L2_u0rel = train_L2_u0 / train_u0_norm
             
-            L2norm_alpha = np.mean(np.sum(np.square(alpha_train_true),axis = 1))
-            L2_alpha = np.mean(np.sum(np.square(alpha_train_pred-alpha_train_true),axis =1))
-            L2_alpharel = L2_alpha / L2norm_alpha
+            train_L2norm_alpha = np.mean(np.sum(np.square(alpha_train_true),axis = 1))
+            train_L2_alpha = np.mean(np.sum(np.square(alpha_train_pred-alpha_train_true),axis =1))
+            train_L2_alpharel = train_L2_alpha / train_L2norm_alpha
             
-            L2_u0_spec = np.mean(np.square(u_train_true[:,0] - u_train_pred[:,0])) / np.mean(np.square(u_train_true[:,0])) 
-            L2_u1_spec = np.mean(np.square(u_train_true[:,1] - u_train_pred[:,1])) / np.mean(np.square(u_train_true[:,1]))
+            train_L2_u0_spec = np.mean(np.square(u_train_true[:,0] - u_train_pred[:,0])) / np.mean(np.square(u_train_true[:,0])) 
+            train_L2_u1_spec = np.mean(np.square(u_train_true[:,1] - u_train_pred[:,1])) / np.mean(np.square(u_train_true[:,1]))
             
-            RMSE_vals = [self.nParams,np.sqrt(L2_hrel),np.sqrt(L2_urel),np.sqrt(L2_u0_spec),\
-                          np.sqrt(L2_u1_spec),np.sqrt(L2_alpharel),num_nonconv_train]
-                
-                #Add training errors to train_df_path
+            train_RMSE_vals = [self.nParams,np.sqrt(train_L2_hrel),np.sqrt(train_L2_urel),np.sqrt(train_L2_u0_spec),\
+                          np.sqrt(train_L2_u1_spec),np.sqrt(train_L2_alpharel),num_nonconv_train]
+            
             with open(train_df_path,'rb') as handle:
                 df_train  = pickle.load(handle)
                 
-            df_train[SaveID] = RMSE_vals
+            df_train[SaveID] = train_RMSE_vals
 
-            print('\n Here is df_train: \n',tabulate(df_train,tablefmt= 'psql',headers = 'keys'))
+            print('\n Here is '+self.model.arch+' df_train: \n',tabulate(df_train,tablefmt= 'psql',headers = 'keys'))
     
             #Save these changes to the dataframe  
             with open(train_df_path,'wb') as handle:
                 pickle.dump(df_train,handle)
-    
-        
-                #Calculate test predictions 
                 
-                """
-                with open(test_df_path,'rb') as handle:
-                    test_df = pickle.load(handle)
-                """
+                
+            """
+            Calculate Test Errors
+            """
+            
+            h_test_pred = h_train_pred.reshape((h_train_pred.shape[0],1))
+            h_test_true = h_train_true.reshape((h_train_true.shape[0],1))
+            
+            test_L2_h = np.mean(np.square(h_test_pred-h_test_true),axis = 0)[0]
+            test_L2_hrel = np.sum(np.square(h_test_pred-h_test_true),axis = 0)[0] / np.sum(np.square(h_test_true),axis = 0)[0]
+            
+            test_L2_u = np.mean(np.sum(np.square(u_test_pred-u_test_true),axis = 1))
+            test_L2norm_u = np.mean(np.sum(np.square(u_test_true),axis =1))
+            test_L2_urel = test_L2_u / test_L2norm_u
+    
+            test_L2_u0 = np.mean(np.square(u_test_pred[:,0]-u_test_true[:,0]))
+            test_u0_norm = np.mean(np.square(u_test_true[:,0]))
+            test_L2_u0rel = test_L2_u0 / test_u0_norm
+            
+            test_L2norm_alpha = np.mean(np.sum(np.square(alpha_test_true),axis = 1))
+            test_L2_alpha = np.mean(np.sum(np.square(alpha_test_pred-alpha_test_true),axis =1))
+            test_L2_alpharel = test_L2_alpha / test_L2norm_alpha
+            
+            test_L2_u0_spec = np.mean(np.square(u_test_true[:,0] - u_test_pred[:,0])) / np.mean(np.square(u_test_true[:,0])) 
+            test_L2_u1_spec = np.mean(np.square(u_test_true[:,1] - u_test_pred[:,1])) / np.mean(np.square(u_test_true[:,1]))
+            
+            test_RMSE_vals = [self.nParams,np.sqrt(test_L2_hrel),np.sqrt(test_L2_urel),np.sqrt(test_L2_u0_spec),\
+                          np.sqrt(test_L2_u1_spec),np.sqrt(test_L2_alpharel),num_nonconv_test]
+            
+            with open(test_df_path,'rb') as handle:
+                df_test = pickle.load(handle)
+        
+            df_test[SaveID] = test_RMSE_vals
+            
+            print('\n Here is '+self.model.arch+' df_test: \n',tabulate(df_test,tablefmt= 'psql',headers = 'keys'))
+            
+            with open(test_df_path,'wb') as handle:
+                
+                pickle.dump(df_test,handle)
+                
+            
 
         else:
             print('errorAnalysis only for N == 1 right now')

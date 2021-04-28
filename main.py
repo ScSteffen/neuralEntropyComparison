@@ -174,10 +174,10 @@ def main():
         #This should be changed to 'loading' the training data from file
         
         trainData_pass = DataClass.make_train_data_wrapper(epsilon,alphaMax,sampleSize)
-        #testData_pass = DataClass.make_test_data_wrapper(epsilon,alphaMax,sampleSize)
-        
+        testData_pass = DataClass.make_test_data_wrapper('uniform',[1e-8,8,int(100)],[-70,70,int(1e+03)])
+        print('Done passing Train and Test Data')
         for model in modelList:
-            model.errorAnalysis(trainData_pass,None,'10','10')  # @Will: Your model error analysis Function goes here
+            model.errorAnalysis(trainData_pass,testData_pass,'10','10')  # @Will: Your model error analysis Function goes here
         print("Evalution successfull")
     else:
         print("Evaluation skipped")
@@ -186,19 +186,20 @@ def main():
 
 
 if __name__ == '__main__':
-    new_dataframe = False 
+    new_dataframe = False
     
     if new_dataframe == True:
-        domain = 'train'
         datID = '10'
-        method = 'icnn'
-        
+
         netNames = ['L1_S15x2','L1_S15x5','L1_S15x10',\
                     'L1_S20x2','L1_S20x5','L1_S20x10',\
                     'L1_S30x2','L1_S30x5','L1_S30x10']
         
         deg = 1
         AT = AnalysisTools('M_N')
-        AT.newDF(N = deg,domain = domain,datID = datID,method = method,saveNames = netNames)
-        
+        for domain in ['test','train']:
+            for method in ['ecnn','icnn']:
+                
+                AT.newDF(N = deg,domain = domain,datID = datID,method = method,saveNames = netNames)
+                
     main()

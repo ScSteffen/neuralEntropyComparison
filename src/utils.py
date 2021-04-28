@@ -476,6 +476,13 @@ class MN_Data:
                                         [-alphaMax, alphaMax, nS], [-alphaMax, alphaMax, nS])
 
         return 0
+    
+    def make_test_data_wrapper(self,strat,uParams,*alphaParams):
+        if self.N==1:
+            return self.make_test_data(strat,uParams,*alphaParams)
+        else:
+            pass
+        
 
     def make_train_data(self, strat, epsilon, *args, **kwargs):
         """
@@ -594,7 +601,7 @@ class MN_Data:
                     self.train_data_path = kwargs['savedir']
                     df_data.to_csv(self.train_data_path, index=False)
 
-                return [moment_data, alpha_data, entropy_data[:, np.newaxis]]
+                #return [moment_data, alpha_data, entropy_data[:, np.newaxis]]
 
         # print to file; Will commented this out 12:02 pm CDT since folders not here
         #df_data.to_csv("data/1D/Monomial_M" + str(self.N) + ".csv", index=False)
@@ -633,7 +640,7 @@ class MN_Data:
             alpha1_mesh = np.linspace(self.test_param_dict['alpha1_min'], \
                                       self.test_param_dict['alpha1_max'], \
                                       self.test_param_dict['num_alpha1'])
-
+            
             alpha0_vals = self.DT.alpha0surface(alpha1_mesh)
 
             alpha0_vals = np.hstack([alpha0_vals + np.log(u0_mesh[i]) for i in range(len(u0_mesh))])
@@ -652,8 +659,8 @@ class MN_Data:
 
             total_data = np.hstack([total_data, entropy_data[:, np.newaxis]])
 
-            data_cols = [*['u' + str(i) for i in range(0, N + 1)], \
-                         *['alpha' + str(i) for i in range(0, N + 1)], 'h']
+            data_cols = [*['u' + str(i) for i in range(0, self.N + 1)], \
+                         *['alpha' + str(i) for i in range(0, self.N + 1)], 'h']
 
             # Copied here from N >= 1 case
             """
@@ -665,7 +672,8 @@ class MN_Data:
 
             print(tabulate(df_data, headers='keys', tablefmt='psql'))
 
-
+            #return [total_data[:,0:2],total_data[:,3:5],total_data[:,6]]
+        
         elif self.N >= 1:
 
             if self.test_strat == 'uniform':
@@ -732,7 +740,9 @@ class MN_Data:
                 if 'savedir' in kwargs:
                     self.test_data_path = kwargs['savedir']
                     df_data.to_csv(self.test_data_path, index=False)
-
+                    
+        return [total_data[:, 0:self.N + 1], total_data[:, self.N + 1:2 * self.N + 2], total_data[:, 2 * self.N + 2:]]
+            
                 # Sample name for data: Monomial_M2_1d.csv or Monomial_M2_1d_normal.csv
 
     def check_realizable(self, u, epsilon=1e-5):
@@ -840,4 +850,6 @@ if __name__ == "__main__":
     epsilon = 0.03
     DataClass = MN_Data(N, Q, 'M_N')
     # DataClass.make_train_data('uniform', epsilon, [-100, 100, 10], [-100, 100, 20])
-    DataClass.make_test_data('uniform', [1, 3, 10], [-10, 10, 100])
+    #DataClass.make_test_data('uniform', [1, 3, 10], [-10, 10, 100])
+    DataClass.make_test_data_wrapper('uniform',[1e-8,8,100],[-65,65,int(1e+04)])
+    
