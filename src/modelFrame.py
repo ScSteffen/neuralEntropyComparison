@@ -15,6 +15,12 @@ from src.IcnnClosure import createIcnnClosure
 from src.EcnnClosure import createEcnnClosure, HaltWhen
 
 import numpy as np
+from src.utils import dualityTools
+
+#DataFrame manipulattion stuff
+import pandas as pd 
+import pickle 
+from tabulate import tabulate 
 
 """
 This callback needs to be moved but is useful for hitting a certain threshold 
@@ -38,6 +44,10 @@ class ModelFrame:
         self.lossChoices = lossChoices
 
         self.N = inputDim
+        
+        self.DT = dualityTools('M_N',1,None)
+        
+        self.nParams = 5
 
         self.saveFolder = "models/losscombi_" + str(lossChoices) + "/width" + str(shapeTuple[0]) + "_depth" + str(
             shapeTuple[1])
@@ -74,21 +84,6 @@ class ModelFrame:
 
     def trainingProcedure(self, trainData, curr):
 
-        """
-        Will's Note:
-            
-        (1) We need to pass a list of zeros for hess_train 
-            
-        
-        (2) Some argument should control the 
-        choice of tensorflow callbacks 
-        that we deploy during training.
-        
-        (3) Another argument should control the number of epochs and the batch size 
-        
-        
-        Can 2 and 3 be done with the parser?
-        """
 
         u_train, alpha_train, h_train, hess_train = trainData
 
@@ -107,25 +102,23 @@ class ModelFrame:
 
         elif curr == 1:
 
-            num_epochs = 1000
-            batch_size = 128
-
-            initial_lr = float(1e-3)
-            mt_patience = int(num_epochs / 10)
-            stop_tol = 1e-8
-            min_delta = stop_tol / 10
-            drop_rate = (num_epochs / 3)
+           num_epochs = int(1.5 * (1e+04))
+           initial_lr = float(1e-3)
+           drop_rate = (num_epochs / 3)
+           stop_tol = 1e-7
+           mt_patience = int(num_epochs / 10)
+           min_delta = stop_tol / 10
+           batch_size = int(100)
 
         elif curr == 2:
 
-            num_epochs = 1000
-            batch_size = 128
-
+            num_epochs = int(1.5 * (1e+04))
             initial_lr = float(1e-3)
-            mt_patience = int(num_epochs / 10)
-            stop_tol = 1e-8
-            min_delta = stop_tol / 10
             drop_rate = (num_epochs / 3)
+            stop_tol = 1e-7
+            mt_patience = int(num_epochs / 10)
+            min_delta = stop_tol / 10
+            batch_size = int(100)
 
         def step_decay(epoch):
 
@@ -191,7 +184,96 @@ class ModelFrame:
 
         return csv_logger
 
-    def errorAnalysis(self):
+    def errorAnalysis(self,trainData,testData = None,datID_train = None,datID_test = None):
+        #this is written for N = 1 only right now 
+        if self.N == 1:
+            
+            train_df_path = 'analysis/raw/results_'+self.model.arch+'_train_'+datID_train + '.pickle'
+            test_df_path = 'analysis/raw/results_'+self.model.arch+'_test_'+datID_test+'.pickle'
+            
+            #this should be adapted soon to include the value of N; for now this works
+            
+            SaveID = 'L'+str(self.lossChoices) + '_S'+str(self.nWidth)+'x'+str(self.nLength)
+            print('Here is network ID: ',SaveID)
+            #this is a variable to be cosnstructed from the loss combination and shape.
+            #Should be a unique network identifier which we have already loaded into the dataframe
+            
+            u_train_true,alpha_train_true,h_train_true = trainData
+            hess_train_true = np.zeros((u_train_true.shape[0],))
+            
+            #Cheap way to reshape 
+            u1_train_true = u_train_true[:,1][:,np.newaxis]
+            
+            #The signatures of our functions are just slightly different so, 
+            #we use switching here 
+            
+            if self.model.arch == 'ecnn':
+                
+                #Calculate training predictions 
+                h_train_pred,alpha_train_pred,u_train_pred,hess_train_pred = self.model.predict(u1_train_true)
+                
+                hess_train_pred = hess_train_pred[:,0]
+                num_nonconv_train = np.sum((hess_train_pred < 0))
+            
+            elif self.model.arch == 'icnn':
+                
+                h_train_pred,alpha_train_pred,toss_ = self.model.predict(u1_train_true)
+                
+                #May need to reshape and stack first argument 
+                alpha0_train_pred = self.DT.alpha0surface(alpha_train_pred[:,0])
+                alpha_train_pred = np.hstack([alpha0_train_pred[:,np.newaxis],alpha_train_pred])
+                u_train_pred = self.DT.moment_vector(alpha_train_pred)
+                num_nonconv_train = 0
+                
+                    
+                    #Calculate training errors (This can be wrapped but we are doing manually here)
+            h_train_pred = h_train_pred.reshape((h_train_pred.shape[0],1))
+            h_train_true = h_train_true.reshape((h_train_true.shape[0],1))
+            
+            L2_h = np.mean(np.square(h_train_pred-h_train_true),axis = 0)[0]
+            L2_hrel = np.sum(np.square(h_train_pred-h_train_true),axis = 0)[0] / np.sum(np.square(h_train_true),axis = 0)[0]
+            
+            L2_u = np.mean(np.sum(np.square(u_train_pred-u_train_true),axis = 1))
+            L2norm_u = np.mean(np.sum(np.square(u_train_true),axis =1))
+            L2_urel = L2_u / L2norm_u
+            
+            L2_u0 = np.mean(np.square(u_train_pred[:,0]-u_train_true[:,0]))
+            u0_norm = np.mean(np.square(u_train_true[:,0]))
+            L2_u0rel = L2_u0 / u0_norm
+            
+            L2norm_alpha = np.mean(np.sum(np.square(alpha_train_true),axis = 1))
+            L2_alpha = np.mean(np.sum(np.square(alpha_train_pred-alpha_train_true),axis =1))
+            L2_alpharel = L2_alpha / L2norm_alpha
+            
+            L2_u0_spec = np.mean(np.square(u_train_true[:,0] - u_train_pred[:,0])) / np.mean(np.square(u_train_true[:,0])) 
+            L2_u1_spec = np.mean(np.square(u_train_true[:,1] - u_train_pred[:,1])) / np.mean(np.square(u_train_true[:,1]))
+            
+            RMSE_vals = [self.nParams,np.sqrt(L2_hrel),np.sqrt(L2_urel),np.sqrt(L2_u0_spec),\
+                          np.sqrt(L2_u1_spec),np.sqrt(L2_alpharel),num_nonconv_train]
+                
+                #Add training errors to train_df_path
+            with open(train_df_path,'rb') as handle:
+                df_train  = pickle.load(handle)
+                
+            df_train[SaveID] = RMSE_vals
+
+            print('\n Here is df_train: \n',tabulate(df_train,tablefmt= 'psql',headers = 'keys'))
+    
+            #Save these changes to the dataframe  
+            with open(train_df_path,'wb') as handle:
+                pickle.dump(df_train,handle)
+    
+        
+                #Calculate test predictions 
+                
+                """
+                with open(test_df_path,'rb') as handle:
+                    test_df = pickle.load(handle)
+                """
+
+        else:
+            print('errorAnalysis only for N == 1 right now')
+            pass
         # TODO
         # @WIll
         return 0

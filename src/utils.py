@@ -4,9 +4,12 @@ collection of utility functions
 
 import numpy as np
 import pandas as pd
+import pickle 
 import warnings
 import math
 from tabulate import tabulate
+import os 
+from os import path 
 
 warnings.simplefilter('error', RuntimeWarning)
 eps = np.finfo(float).eps
@@ -439,12 +442,10 @@ class dualityTools:
 
     # 2. Obtain integrals: produce p^{t} x a = [p^{t}_ik * a_k]_{ik} and then
 
-
 """
 class TestData:
   pass 
 """
-
 
 class MN_Data:
     def __init__(self, N, quad, closure, **opts):
@@ -595,8 +596,8 @@ class MN_Data:
 
                 return [moment_data, alpha_data, entropy_data[:, np.newaxis]]
 
-        # print to file 
-        df_data.to_csv("data/1D/Monomial_M" + str(self.N) + ".csv", index=False)
+        # print to file; Will commented this out 12:02 pm CDT since folders not here
+        #df_data.to_csv("data/1D/Monomial_M" + str(self.N) + ".csv", index=False)
         return [total_data[:, 0:self.N + 1], total_data[:, self.N + 1:2 * self.N + 2], total_data[:, 2 * self.N + 2:]]
 
     def make_test_data(self, strat, *args, **kwargs):
@@ -779,6 +780,58 @@ class MN_Data:
                     violate_rules[i] = 0
 
         return violate_rules
+    
+class AnalysisTools():
+    def __init__(self,closure,**opts):
+        """
+        Closure is string like 'M_N'
+        """
+        self.closure = closure
+        pass
+    
+    def newDF(self,N,domain,datID,method,saveNames):
+        """
+        domain: <str> must be one of [train', 'test']
+        
+        datID: <str> - must be one of ['xx','yy']
+        
+        method: <str> - must be one of ['icnn','ecnn']
+        
+        saveNames: <list> - must be list of strings 
+                            containing checkpoint or shortcut model 
+                            names
+        """
+         #Example: analysis/raw/results_ecnn_train_10.pickle
+        filePath = 'analysis/raw/' +'results_'+method+'_'+domain+'_'+datID+'.pickle'
+        if path.exists(filePath):
+            inpt = input('\n The dataframe specified already exists; override with empty? Type [y/n]: ')
+            if 'y' in inpt:
+                make = True 
+            else:
+                print('\n y not found in user input; no new dataframe at path location \n')
+                make = False
+        else:
+            make = True
+            
+        if make:
+            print('\n Making new dataframe at path:',filePath,'\n')
+            cols = ['NetID','Size','RMSE h','RMSE u','RMSE u0','RMSE u1','RMSE alpha','Num NegDef']
+            
+            baseList = []
+            
+            for name in saveNames:
+                newRow = [name,*[0 for x in cols[1:]]]
+                baseList.append(newRow)
+            
+            baseFrame = pd.DataFrame(baseList,columns = cols)
+            
+            baseFrame = baseFrame.transpose()
+            baseFrame.columns = baseFrame.iloc[0]
+            baseFrame = baseFrame.drop(baseFrame.index[0])
+            with open(filePath,'wb') as handle:
+                pickle.dump(baseFrame,handle)
+        else:
+            print('No new frame')
 
 
 if __name__ == "__main__":

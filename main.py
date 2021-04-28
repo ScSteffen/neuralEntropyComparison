@@ -10,10 +10,11 @@ from optparse import OptionParser
 ### imports of own scripts
 from src.modelFrame import ModelFrame
 from src import utils
+from src.utils import AnalysisTools
 import numpy as np
 import os
 import tensorflow as tf
-
+from os import path 
 
 def main():
     '''
@@ -42,7 +43,7 @@ def main():
                       help="evaluation and error analysis", metavar="EVALUATE")
     parser.add_option("-l", "--load", dest="load", default=0,
                       help="0: Dont load weights\n1:Load weights", metavar="LOAD")
-    parser.add_option("-o", "--lossCombi", dest="losses", default=0,
+    parser.add_option("-o", "--lossCombi", dest="losses", default=1,
                       help="combination of model losses (objective functions): \n"
                            "1 : [h] \n"
                            "2:  [h,alpha] \n"
@@ -124,7 +125,7 @@ def main():
 
     ### Choose Network size (as discussed, 1000, 2000, 5000 params) ==> Translate to size bracket (1 = 1000,2 = 2000,3 = 5000)
     # Depending on the size bracket, each network needs to adapt its width and depth (to get the corr. number of trainable parameters)
-    trainableParamBracket = int(options.bracket)
+    #trainableParamBracket = int(options.bracket)
     losses = int(options.losses)  # [mse(h), mse(alpha), mse(u), mse(flux)]
     # inputDim = int(options.degreeBasis) + 1  # CAREFULL HERE; we adjusted for new net input sizes
     inputDim = int(options.degreeBasis)
@@ -169,9 +170,14 @@ def main():
 
     print("---- Evaluation and error Analysis ----")
     if (options.evaluation == True):
-        testData = utils.getTestData()  # @Will: Your Script goes here
+        #testData = utils.getTestData()  # @Will: Your Script goes here
+        #This should be changed to 'loading' the training data from file
+        
+        trainData_pass = DataClass.make_train_data_wrapper(epsilon,alphaMax,sampleSize)
+        #testData_pass = DataClass.make_test_data_wrapper(epsilon,alphaMax,sampleSize)
+        
         for model in modelList:
-            model.errorAnalysis(testData)  # @Will: Your model error analysis Function goes here
+            model.errorAnalysis(trainData_pass,None,'10','10')  # @Will: Your model error analysis Function goes here
         print("Evalution successfull")
     else:
         print("Evaluation skipped")
@@ -180,4 +186,19 @@ def main():
 
 
 if __name__ == '__main__':
+    new_dataframe = False 
+    
+    if new_dataframe == True:
+        domain = 'train'
+        datID = '10'
+        method = 'icnn'
+        
+        netNames = ['L1_S15x2','L1_S15x5','L1_S15x10',\
+                    'L1_S20x2','L1_S20x5','L1_S20x10',\
+                    'L1_S30x2','L1_S30x5','L1_S30x10']
+        
+        deg = 1
+        AT = AnalysisTools('M_N')
+        AT.newDF(N = deg,domain = domain,datID = datID,method = method,saveNames = netNames)
+        
     main()
