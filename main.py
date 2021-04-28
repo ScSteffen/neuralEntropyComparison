@@ -48,7 +48,7 @@ def main():
                            "2:  [h,alpha] \n"
                            "3 : [h,u] \n"
                            "4:  [h,u,flux]", metavar="LOSSES")
-    parser.add_option("-p", "--processingmode", dest="processingmode", default=0,
+    parser.add_option("-p", "--processingmode", dest="processingmode", default=1,
                       help="0: CPU\n1:GPU", metavar="LOAD")
     parser.add_option("-t", "--train", dest="train", default=0,
                       help="train the models", metavar="TRAIN")
