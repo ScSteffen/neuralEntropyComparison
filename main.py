@@ -15,6 +15,10 @@ import numpy as np
 import os
 import tensorflow as tf
 from os import path 
+import pandas as pd 
+import numpy as np 
+pd.set_option('display.float_format', '{:.2e}'.format)
+import pickle 
 
 def main():
     '''
@@ -186,7 +190,12 @@ def main():
 
 
 if __name__ == '__main__':
+    
+    tex_dataframe = True 
+    
     new_dataframe = False
+    
+    run_main = False 
     
     if new_dataframe == True:
         datID = '10'
@@ -201,5 +210,29 @@ if __name__ == '__main__':
             for method in ['ecnn','icnn']:
                 
                 AT.newDF(N = deg,domain = domain,datID = datID,method = method,saveNames = netNames)
+           
+    if tex_dataframe:
+        netNames = ['L1_S15x2','L1_S15x5','L1_S15x10',\
+                    'L1_S20x2','L1_S20x5','L1_S20x10',\
+                    'L1_S30x2','L1_S30x5','L1_S30x10']
+        
+        for method in ['ecnn','icnn']:
                 
-    main()
+            train_path = 'analysis/raw/results_'+method+'_train_'+'10'+ '.pickle'
+            test_path = 'analysis/raw/results_'+method+'_test_'+'10'+'.pickle'
+            
+            with open(train_path,'rb') as handle:
+                df_train = pickle.load(handle)
+            with open(test_path,'rb') as handle:
+                df_test = pickle.load(handle)
+                
+            for name in netNames:
+                df_train[name] = pd.to_numeric(df_train[name],downcast=  'float')
+                df_test[name] = pd.to_numeric(df_test[name],downcast=  'float')
+                
+            print('\n Test Frame for '+method+':', df_test.to_latex(),'\n')
+            print('\n Train Frame for '+method+':',df_train.to_latex(),'\n')
+            
+    if run_main:
+           
+        main()

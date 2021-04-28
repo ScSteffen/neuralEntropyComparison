@@ -1,0 +1,355 @@
+\documentclass{article}
+%-----Packages-----
+%\usepackage{fullpage}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{etoolbox}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{epsfig} 
+\usepackage{comment} 
+\usepackage[margin =  1.25in]{geometry}
+
+\graphicspath{{C:/Users/Will/Desktop/}}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks = true,linktoc = all,linkcolor = blue}
+
+
+\usepackage{enumitem}
+\usepackage{latexsym}
+\usepackage{mathrsfs} 
+\usepackage{enumitem}
+\usepackage{latexsym}
+\usepackage{mathrsfs} 
+\usepackage[all,arc]{xy} 
+\usepackage{amsmath,mathtools}
+\usepackage{multicol}
+\usepackage{siunitx,lipsum}
+\usepackage{esint} 
+\usepackage{parallel}
+\usepackage{titlesec}
+\usepackage{thmtools}
+\usepackage[T1]{fontenc}
+\usepackage[]{algorithm2e}
+\usepackage{float}
+
+%-----Bold Math Capitals-----
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bC}{\mathbf{C}}
+\newcommand{\bD}{\mathbf{D}}
+\newcommand{\bE}{\mathbf{E}}
+\newcommand{\bF}{\mathbf{F}}
+\newcommand{\bG}{\mathbf{G}}
+\newcommand{\bH}{\mathbf{H}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\bJ}{\mathbf{J}}
+\newcommand{\bK}{\mathbf{K}}
+\newcommand{\bL}{\mathbf{L}}
+\newcommand{\bM}{\mathbf{M}}
+\newcommand{\bN}{\mathbf{N}}
+\newcommand{\bO}{\mathbf{O}}
+\newcommand{\bP}{\mathbf{P}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bR}{\mathbf{R}}
+\newcommand{\bS}{\mathbf{S}}
+\newcommand{\bT}{\mathbf{T}}
+\newcommand{\bU}{\mathbf{U}}
+\newcommand{\bV}{\mathbf{V}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\bZ}{\mathbf{Z}}
+
+%-----Blackboard Bold Math Capitals-----
+\newcommand{\bbA}{\mathbb{A}}
+\newcommand{\bbB}{\mathbb{B}}
+\newcommand{\bbC}{\mathbb{C}}
+\newcommand{\bbD}{\mathbb{D}}
+\newcommand{\bbE}{\mathbb{E}}
+\newcommand{\bbF}{\mathbb{F}}
+\newcommand{\bbG}{\mathbb{G}}
+\newcommand{\bbH}{\mathbb{H}}
+\newcommand{\bbI}{\mathbb{I}}
+\newcommand{\bbJ}{\mathbb{J}}
+\newcommand{\bbK}{\mathbb{K}}
+\newcommand{\bbL}{\mathbb{L}}
+\newcommand{\bbM}{\mathbb{M}}
+\newcommand{\bbN}{\mathbb{N}}
+\newcommand{\bbO}{\mathbb{O}}
+\newcommand{\bbP}{\mathbb{P}}
+\newcommand{\bbQ}{\mathbb{Q}}
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbS}{\mathbb{S}}
+\newcommand{\bbT}{\mathbb{T}}
+\newcommand{\bbU}{\mathbb{U}}
+\newcommand{\bbV}{\mathbb{V}}
+\newcommand{\bbW}{\mathbb{W}}
+\newcommand{\bbX}{\mathbb{X}}
+\newcommand{\bbY}{\mathbb{Y}}
+\newcommand{\bbZ}{\mathbb{Z}}
+\newcommand{\g}[1]{g(#1)}
+%-----Script Math Capitals-----
+\newcommand{\sA}{\mathscr{A}}
+\newcommand{\sB}{\mathscr{B}}
+\newcommand{\sC}{\mathscr{C}}
+\newcommand{\sD}{\mathscr{D}}
+\newcommand{\sE}{\mathscr{E}}
+\newcommand{\sF}{\mathscr{F}}
+\newcommand{\sG}{\mathscr{G}}
+\newcommand{\sH}{\mathscr{H}}
+\newcommand{\sI}{\mathscr{I}}
+\newcommand{\sJ}{\mathscr{J}}
+\newcommand{\sK}{\mathscr{K}}
+\newcommand{\sL}{\mathscr{L}}
+\newcommand{\sM}{\mathscr{M}}
+\newcommand{\sN}{\mathscr{N}}
+\newcommand{\sO}{\mathscr{O}}
+\newcommand{\sP}{\mathscr{P}}
+\newcommand{\sQ}{\mathscr{Q}}
+\newcommand{\sR}{\mathscr{R}}
+\newcommand{\sS}{\mathscr{S}}
+\newcommand{\sT}{\mathscr{T}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\sV}{\mathscr{V}}
+\newcommand{\sW}{\mathscr{W}}
+\newcommand{\sX}{\mathscr{X}}
+\newcommand{\sY}{\mathscr{Y}}
+\newcommand{\sZ}{\mathscr{Z}}
+\newcommand{\defeq}{\mathrel{\mathop:}=}
+\newcommand\DistTo{\xrightarrow{
+		\,\smash{\raisebox{-0.65ex}{\ensuremath{\scriptstyle\sim}}}\,}}
+\newcommand{\secref}[1]{\S\ref{#1}}
+%-----Redefined Commands-----
+\newcommand{\p}[1]{\left(#1\right)}
+\newcommand{\uv}[1]{\mathbf{\hat{#1}}}
+\newcommand{\ml}[1]{\mathbb{#1}}
+\newcommand{\ov}[1]{\overline{#1}}
+\newcommand{\ab}[1]{\left|#1\right|}
+\renewcommand{\sb}[1]{\left[#1\right]}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\ginv}[1]{#1^{-1}}
+\newcommand{\cinv}[1]{\frac{\overline{#1}}{\norm{#1}^2}}
+\newcommand{\finv}[1]{\frac{1}{#1}}
+\newcommand{\zmodnz}[1]{\bbZ/#1\bbZ}
+%\renewcommand{\phi}{\varphi}
+\providecommand{\abs}[1]{\lvert #1 \rvert}
+\providecommand{\norm}[1]{\lVert #1 \rVert}
+\providecommand{\x}{\times}
+\providecommand{\ra}{\rightarrow}
+\providecommand{\arr}{\longrightarrow}
+\providecommand{\lpn}[2]{\norm{#1}_{l^#2}} 
+\providecommand{\lpns}[3]{\norm{#1}_{l^{#2}(#3)}}
+\providecommand{\Lpn}[2]{\norm{#1}_{L^{#2}}}
+\providecommand{\Lpns}[3]{\norm{#1}_{L^{#2}(#3)}}
+\providecommand{\sbn}[2]{\norm{#1}_{W^{(1,#2)}}}
+
+
+\renewcommand{\v}[1]{\mathbf{#1}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\pwrzero}{\sum\limits_{n=0}^{\infty} a_nz^n} 
+\newcommand{\pwrat}[1]{\sum\limits_{n=0}^{\infty} a_n(z-#1)^n} 
+\newcommand{\ser}[3]{\sum\limits_{#1 = #2}^{#3}}
+\newcommand{\seri}[1]{\sum\limits_{#1}}
+
+%Operators%
+\newcommand{\normsq}[1]{\norm{#1}^2}
+\newcommand{\partialpartial}[2]{\frac{\partial #1}{\partial #2}}  
+\newcommand{\pp}[2]{\frac{\partial#1}{\partial#2}}
+\providecommand{\lintegral}[2]{\int\limits_{#1}^{#2}} 
+\providecommand{\fintegral}[1]{\int\limits_{#1}}
+\providecommand{\sintegral}[1]{\fint\limits_{#1}}
+\providecommand{\lac}[1]{\Delta#1}
+\providecommand{\lacc}[2]{\Delta(#1)(#2)}
+\providecommand{\vlac}[1]{(\nabla^2)} 
+\providecommand{\grad}[1]{\nabla#1} 
+\providecommand{\expt}[1]{\langle #1 \rangle}
+\providecommand{\diff}[1]{\partial_{#1}}
+\providecommand{\fdiff}[2]{(\partial_{#1}#2)}
+\providecommand{\dtime}{\frac{d}{dt}}
+\providecommand{\tdiff}[1]{\frac{d}{d#1}}
+\providecommand{\fnl}[1]{\hat{\v{#1}}}
+\providecommand{\pb}[2]{\{#1,#2\}}
+\providecommand{\ip}[2]{\langle #1, #2 \rangle}
+\providecommand{\trace}[1]{\text{Tr}(#1)}
+\providecommand{\lip}[1]{\text{Lip}(#1)}
+\providecommand{\hsn}[1]{\norm{#1}_{H^1}}
+\providecommand{\hsno}[1]{\norm{#1}_{H^{1}_0}}
+\providecommand{\htn}[1]{\norm{#1}_{H^2_0(U)}}
+
+
+%Constant Symbols, Typesetting% 
+\providecommand{\hbar}{\hslash}
+\providecommand{\bk}{k_B}
+\providecommand{\qmt}{\frac{\hbar^2}{2m}}
+\renewcommand{\v}[1]{\mathbf{#1}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\providecommand{\radi}{R_{n,l}(r)}
+\providecommand{\radfi}{u_{n,l}(r)}
+\providecommand{\sphi}{Y_{l,m}(\theta,\varphi)}
+\providecommand{\Psii}{\Psi_{n,l,m}}
+\providecommand{\fdind}[3]{#1_{#2,#3}}
+\providecommand{\ftind}[4]{#1_{#2,#3,#4}} 
+\providecommand{\bs}[1]{\boldsymbol{#1}}
+\providecommand{\support}[1]{\text{supp}(#1)} 
+\providecommand{\mum}{\mu^{-}}
+\providecommand{\mup}{\mu^{+}}
+\providecommand{\lup}{\lambda^{+}}
+\providecommand{\lum}{\lambda^{-}}
+\providecommand{\nup}{\nu^{+}}
+\providecommand{\nums} {\nu^{-}}
+\providecommand{\linfty}[1]{\norm{#1}_{\infty}}
+\providecommand{\posf}{f^{+}}
+\providecommand{\negf}{f^{-}}
+\providecommand{\essup}{\text{ess sup}}
+\providecommand{\dual}[1]{#1^{\star}}
+\providecommand{\dnorm}[1]{\norm{#1}_{\dual{E}}}
+\providecommand{\wsto}{\stackrel{\star}{\rightharpoonup}}
+\providecommand{\wto}{\rightharpoonup}
+\providecommand{\Image}{\text{Im}}
+\providecommand{\testfunctions}{C^{\infty}_C}
+\providecommand{\holder}[1]{[#1]_{C^{\alpha}}} 
+\providecommand{\aff}{\text{aff}}
+\providecommand{\conv}{\text{conv}\ }
+\providecommand{\MSE}{\text{MSE}}
+
+%Objects%
+\renewcommand{\phi}{\varphi}
+\providecommand{\abs}[1]{\lvert #1 \rvert}
+\providecommand{\norm}[1]{\lVert #1 \rVert}
+\providecommand{\x}{\times}
+\providecommand{\ra}{\rightarrow}
+\providecommand{\arr}{\longrightarrow}
+\providecommand{\lpm}[1]{\sL^{#1}(X,\sM,\mu)}
+\providecommand{\ddz}{\frac{d}{dz}}
+\newcommand{\cvec}[2]{\begin{pmatrix} #1 \\ #2 \end{pmatrix}}
+\newcommand{\dmat}[4]{\begin{pmatrix} #1 & #2 \\ #3 & #4  \end{pmatrix}}
+\newcommand{\spinx}{\frac{\hbar}{2}\begin{pmatrix} 0 & 1 \\ 1 & 0  \end{pmatrix}}
+\newcommand{\spiny}{\frac{\hbar}{2}\begin{pmatrix} 0 & -i \\ i & 0  \end{pmatrix}}
+\newcommand{\spinz}{\frac{\hbar}{2}\begin{pmatrix} 1 & 0 \\  0 & -1 \end{pmatrix}}
+\newcommand{\obra}[1]{\langle #1 \vert }
+\newcommand{\oket}[1]{\vert#1\rangle}
+\newcommand{\inpd}[2]{\langle #1 \vert #2\rangle}
+\newcommand{\ketbra}[2]{\oket{#1}\obra{#2}}
+\newcommand{\ket}[1]{\vert #1 \rangle}
+\newcommand{\bra}[1]{\langle #1 \vert} 
+\providecommand{\seq}[2]{\{#1_{#2}\}_{#2 \in \bbZ_+}}
+\providecommand{\acol}[1]{\{#1_\alpha\}}
+\providecommand{\col}[3]{\{#1_{#2}\}_{#2 \in #3}}
+\providecommand{\limsups}[3]{\bigcap_{#1 = 1}^{\infty} \bigcup_{#2 \geq #1} #3_{#2}} 
+\providecommand{\dictorder}{<_d}
+\providecommand{\aunion}[1]{\bigcup_{#1}}  
+\providecommand{\aint}[1]{\bigcap_{#1}}
+\providecommand{\ball}[2]{B(#1,#2)} 
+\providecommand{\mball}[3]{B_{#3}(#1,#2)}
+\providecommand{\Lp}[1]{\sL^{#1}(d\mu)}
+\providecommand{\lpr}[2]{\sL^{#1}(\bbR^{#2},dm)}
+\providecommand{\cont}[1]{\sC(#1)}
+\providecommand{\contcs}[1]{\sC_C (#1)}
+\providecommand{\weakstar}{\text{weak}^{\star}}
+\providecommand{\cinfty}{C^{\infty}}
+\newcommand{\eval}[2]{\vert^{#1}_{#2}}
+\renewcommand{\div}{\text{div}}
+\newcommand{\osc}{\text{osc}}
+\newtheorem*{Proposition}{Proposition}
+\newtheorem*{Remark}{Remark}
+\newtheorem*{definition}{Definition}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{Theorem}{Theorem}
+\newtheorem*{cor}{Corollary}
+\newtheorem*{note}{Note}
+\newtheorem*{claim}{Claim}
+\newtheorem*{fact}{Fact}
+\newtheorem*{Ex}{Example}
+\newtheorem{Question}{Question}
+\theoremstyle{remark} 
+
+\numberwithin{equation}{subsection}
+\AfterEndEnvironment{claim}{\noindent\ignorespaces}
+
+\setcounter{tocdepth}{2}
+
+
+%\title{ORNL-CAM: Running Project Notes}
+%\author{William Porteous}
+%\date{22 October 2019}
+
+\begin{document} 
+	
+	%\maketitle
+	
+\begin{center}
+	\textbf{Miscellaneous Results}
+	\\[0.05in]
+	Updated: \today 
+\end{center}
+
+\tableofcontents
+
+\begin{tabular}{lrrrrrrrrr}
+	\toprule
+	NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
+	\midrule
+	Size       &  5.26e+02 &  1.25e+03 &   2.45e+03 &  9.01e+02 &  2.16e+03 &   4.26e+03 &  1.95e+03 &  4.74e+03 &   9.39e+03 \\
+	RMSE h     &  1.34e+00 &  2.51e+00 &   8.87e+00 &  1.10e+00 &  8.05e-01 &   1.69e+00 &  1.53e+00 &  2.50e+00 &   4.09e+00 \\
+	RMSE u     &  3.08e+00 &  2.75e+02 &   9.98e-01 &  5.60e+01 &  1.77e+01 &   7.63e-01 &  2.90e+00 &  8.56e-01 &   9.63e-01 \\
+	RMSE u0    &  3.83e+00 &  2.84e+02 &   9.81e-01 &  7.66e+01 &  2.35e+01 &   5.30e-01 &  3.32e+00 &  8.30e-02 &   8.15e-01 \\
+	RMSE u1    &  1.91e+00 &  2.66e+02 &   1.02e+00 &  6.75e+00 &  6.57e+00 &   9.62e-01 &  2.33e+00 &  1.25e+00 &   1.11e+00 \\
+	RMSE alpha &  1.02e+00 &  9.69e-01 &   9.72e-01 &  1.05e+00 &  1.02e+00 &   1.01e+00 &  1.02e+00 &  1.01e+00 &   9.94e-01 \\
+	Num NegDef &  1.00e+05 &  0.00e+00 &   1.00e+05 &  6.00e+02 &  0.00e+00 &   3.63e+04 &  5.05e+04 &  1.00e+05 &   1.00e+05 \\
+	\bottomrule
+\end{tabular}
+
+\begin{tabular}{lrrrrrrrrr}
+	\toprule
+	NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
+	\midrule
+	Size       &  5.26e+02 &  1.25e+03 &   2.45e+03 &  9.01e+02 &  2.16e+03 &   4.26e+03 &  1.95e+03 &  4.74e+03 &   9.39e+03 \\
+	RMSE h     &  1.34e+00 &  2.51e+00 &   8.87e+00 &  1.10e+00 &  8.05e-01 &   1.69e+00 &  1.53e+00 &  2.50e+00 &   4.09e+00 \\
+	RMSE u     &  3.08e+00 &  2.75e+02 &   9.98e-01 &  5.60e+01 &  1.77e+01 &   7.63e-01 &  2.90e+00 &  8.55e-01 &   9.63e-01 \\
+	RMSE u0    &  3.83e+00 &  2.84e+02 &   9.81e-01 &  7.66e+01 &  2.35e+01 &   5.30e-01 &  3.32e+00 &  8.30e-02 &   8.15e-01 \\
+	RMSE u1    &  1.91e+00 &  2.66e+02 &   1.02e+00 &  6.75e+00 &  6.57e+00 &   9.62e-01 &  2.33e+00 &  1.25e+00 &   1.11e+00 \\
+	RMSE alpha &  1.01e+00 &  9.61e-01 &   9.64e-01 &  1.04e+00 &  1.02e+00 &   9.96e-01 &  1.01e+00 &  1.00e+00 &   9.85e-01 \\
+	Num NegDef &  1.00e+04 &  0.00e+00 &   1.00e+04 &  5.80e+01 &  0.00e+00 &   3.63e+03 &  5.05e+03 &  1.00e+04 &   1.00e+04 \\
+	\bottomrule
+\end{tabular}
+
+
+\begin{tabular}{lrrrrrrrrr}
+	\toprule
+	NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
+	\midrule
+	Size       &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 \\
+	RMSE h     &  8.37e-01 &  5.79e-01 &   1.02e+00 &  9.43e-01 &  1.12e+00 &   6.69e+00 &  1.47e+00 &  2.97e+00 &   1.98e+00 \\
+	RMSE u     &  7.44e-01 &  6.63e-01 &   5.35e-01 &  6.10e-01 &  7.28e-01 &   1.18e+00 &  7.96e-01 &  7.44e-01 &   6.65e-01 \\
+	RMSE u0    &  4.27e-08 &  4.53e-08 &   4.00e-08 &  4.22e-08 &  4.41e-08 &   1.02e-07 &  4.71e-08 &  4.08e-08 &   4.73e-08 \\
+	RMSE u1    &  1.09e+00 &  9.69e-01 &   7.82e-01 &  8.91e-01 &  1.06e+00 &   1.72e+00 &  1.16e+00 &  1.09e+00 &   9.71e-01 \\
+	RMSE alpha &  1.00e+00 &  1.00e+00 &   9.93e-01 &  9.97e-01 &  1.00e+00 &   1.03e+00 &  1.00e+00 &  1.00e+00 &   9.98e-01 \\
+	Num NegDef &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 \\
+	\bottomrule
+\end{tabular}
+
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
+\midrule
+Size       &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 \\
+RMSE h     &  8.37e-01 &  5.79e-01 &   1.02e+00 &  9.43e-01 &  1.12e+00 &   6.69e+00 &  1.47e+00 &  2.97e+00 &   1.98e+00 \\
+RMSE u     &  7.44e-01 &  6.63e-01 &   5.35e-01 &  6.10e-01 &  7.28e-01 &   1.18e+00 &  7.96e-01 &  7.44e-01 &   6.65e-01 \\
+RMSE u0    &  4.24e-08 &  4.61e-08 &   4.04e-08 &  4.30e-08 &  4.38e-08 &   1.04e-07 &  4.71e-08 &  4.10e-08 &   4.74e-08 \\
+RMSE u1    &  1.09e+00 &  9.69e-01 &   7.82e-01 &  8.91e-01 &  1.06e+00 &   1.72e+00 &  1.16e+00 &  1.09e+00 &   9.71e-01 \\
+RMSE alpha &  9.93e-01 &  9.92e-01 &   9.84e-01 &  9.88e-01 &  9.95e-01 &   1.03e+00 &  9.96e-01 &  9.93e-01 &   9.90e-01 \\
+Num NegDef &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 \\
+\bottomrule
+\end{tabular}
+
+
+
+
+\end{document}
