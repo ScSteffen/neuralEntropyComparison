@@ -11,6 +11,8 @@ from optparse import OptionParser
 from src.modelFrame import ModelFrame
 from src import utils
 import numpy as np
+import os
+import tensorflow as tf
 
 
 def main():
@@ -46,6 +48,8 @@ def main():
                            "2:  [h,alpha] \n"
                            "3 : [h,u] \n"
                            "4:  [h,u,flux]", metavar="LOSSES")
+    parser.add_option("-p", "--processingmode", dest="processingmode", default=0,
+                      help="0: CPU\n1:GPU", metavar="LOAD")
     parser.add_option("-t", "--train", dest="train", default=0,
                       help="train the models", metavar="TRAIN")
     parser.add_option("-w", "--width", dest='nWidth', default=10, \
@@ -66,7 +70,6 @@ def main():
     """
 
     (options, args) = parser.parse_args()
-
     options.architecture = int(options.architecture)
     options.losses = int(options.losses)
     options.train = bool(int(options.train))
@@ -74,11 +77,22 @@ def main():
     options.evaluation = bool(int(options.evaluation))
     options.bracket = int(options.bracket)
     options.load = bool(int(options.load))
+    options.processingmode = int(options.processingmode)
 
     # Will added these options; if they don't work, he will fix
     options.nWidth = int(options.nWidth)
     options.nLength = int(options.nLength)
     options.curr = int(options.curr)
+
+    # witch to CPU mode, if wished
+    if options.processingmode == 0:
+        # Set CPU as available physical device
+        # Set CPU as available physical device
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+        if tf.test.gpu_device_name():
+            print('GPU found. Using GPU')
+        else:
+            print("Disabled GPU. Using CPU")
 
     print("Getting train and test data")
     # Creating settings to run
