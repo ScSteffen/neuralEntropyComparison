@@ -148,8 +148,7 @@ def main():
     if (options.train):
         # Train all models in the list
         for model in modelList:
-            model.trainingProcedure([u_train[:, 1], alpha_train[:, 1], h_train, hess_train], \
-                                    options.curr)
+            model.trainingProcedure([u_train[:, 1], alpha_train[:, 1], h_train, hess_train], options.curr)
         print("Training successfull")
     else:
         print("Training skipped")
