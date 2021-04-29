@@ -191,7 +191,7 @@ def main():
 
 if __name__ == '__main__':
     
-    tex_dataframe = True
+    tex_dataframe = True 
     
     new_dataframe = False
     

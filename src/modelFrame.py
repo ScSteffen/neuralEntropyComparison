@@ -57,7 +57,9 @@ class ModelFrame:
             self.model = createIcnnClosure(inputDim=inputDim, shapeTuple=(self.nWidth, self.nLength),
                                            lossChoices=lossChoices, Quad=quad)
             
-            self.nParams = 5
+            #top line weights, lower line biases
+            self.nParams = self.nWidth + (self.nWidth**2)*(self.nLength) + (self.nWidth*self.nLength) + 2 + \
+                           self.nWidth + (self.nWidth + self.nLength) + 1
 
         elif (architecture == 1):  # Will: (model choice is ECNN)
 
