@@ -230,6 +230,8 @@ if __name__ == '__main__':
                 df_train[name] = pd.to_numeric(df_train[name],downcast=  'float')
                 df_test[name] = pd.to_numeric(df_test[name],downcast=  'float')
                 
+            df_test = df_test.transpose()
+            df_train = df_train.transpose()
             print('\n Test Frame for '+method+':', df_test.to_latex(),'\n')
             print('\n Train Frame for '+method+':',df_train.to_latex(),'\n')
             

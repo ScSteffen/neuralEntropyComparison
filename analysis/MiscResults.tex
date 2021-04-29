@@ -270,6 +270,7 @@
 \newtheorem{Question}{Question}
 \theoremstyle{remark} 
 
+
 \numberwithin{equation}{subsection}
 \AfterEndEnvironment{claim}{\noindent\ignorespaces}
 
@@ -292,62 +293,120 @@
 
 \tableofcontents
 
-\begin{tabular}{lrrrrrrrrr}
+
+\section{Framework: Choices Made}
+
+\begin{enumerate} 
+	\item \textbf{Sampling the Realizable Domain:} $\epsilon$-rejection along boundary curves plus uniform-in-alpha grid. N = 1,2.\\ 
+
+	\item \textbf{Unified Training Routine:} Inputs and outputs for these models have been unified. Multiple loss combinations vailable, including 
+	[h,$\boldsymbol{\alpha}$,$\vec{u}$].\\
+	
+	\item \textbf{Comparison Framework}: Comparison within the context of the M$_N$ solution routine includes a notion of efficiency. We may adjust hyperparameters, data-set, and network size in order to compare the accuracy and efficiency of resulting networks.\\
+\end{enumerate}
+
+\section{To Do}:
+\begin{enumerate}
+\item \textbf{Grid Search:} Grid search and comparison for different choices of networks and training penalties. \\ 
+
+\item \textbf{Comparison with Modest N}: How do the models perform in high dimensional closure (with uniform sampling in alpha, where possible). 
+
+\item \textbf{Sampling Strategy}: These models are defined in higher dimension but we cannot train and test them without data. This requires a more intelligent sampling than uniform-plus-rejection. 
+\begin{itemize}
+	\item Steffen's Undergrad - Monte Carlo
+	\item Uniform Distance to Boundary Curves 
+\end{itemize}
+[h,$\alpha$,$\vec{u}$].\\
+\end{enumerate} 
+	
+
+
+\section{Network Error Performance: Training and Testing Results}
+
+
+\begin{table}[H]
+
+\begin{tabular}{lrrrrrrr}
 	\toprule
-	NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
+	{} &     Size &   RMSE h &   RMSE u &  RMSE u0 &  RMSE u1 &  RMSE alpha &  Num NegDef \\
+	NetID     &          &          &          &          &          &             &             \\
 	\midrule
-	Size       &  5.26e+02 &  1.25e+03 &   2.45e+03 &  9.01e+02 &  2.16e+03 &   4.26e+03 &  1.95e+03 &  4.74e+03 &   9.39e+03 \\
-	RMSE h     &  1.34e+00 &  2.51e+00 &   8.87e+00 &  1.10e+00 &  8.05e-01 &   1.69e+00 &  1.53e+00 &  2.50e+00 &   4.09e+00 \\
-	RMSE u     &  3.08e+00 &  2.75e+02 &   9.98e-01 &  5.60e+01 &  1.77e+01 &   7.63e-01 &  2.90e+00 &  8.56e-01 &   9.63e-01 \\
-	RMSE u0    &  3.83e+00 &  2.84e+02 &   9.81e-01 &  7.66e+01 &  2.35e+01 &   5.30e-01 &  3.32e+00 &  8.30e-02 &   8.15e-01 \\
-	RMSE u1    &  1.91e+00 &  2.66e+02 &   1.02e+00 &  6.75e+00 &  6.57e+00 &   9.62e-01 &  2.33e+00 &  1.25e+00 &   1.11e+00 \\
-	RMSE alpha &  1.02e+00 &  9.69e-01 &   9.72e-01 &  1.05e+00 &  1.02e+00 &   1.01e+00 &  1.02e+00 &  1.01e+00 &   9.94e-01 \\
-	Num NegDef &  1.00e+05 &  0.00e+00 &   1.00e+05 &  6.00e+02 &  0.00e+00 &   3.63e+04 &  5.05e+04 &  1.00e+05 &   1.00e+05 \\
+	L1\_S15x2  & 5.26e+02 & 1.34e+00 & 3.08e+00 & 3.83e+00 & 1.91e+00 &    1.02e+00 &    1.00e+05 \\
+	L1\_S15x5  & 1.25e+03 & 2.51e+00 & 2.75e+02 & 2.84e+02 & 2.66e+02 &    9.69e-01 &    0.00e+00 \\
+	L1\_S15x10 & 2.45e+03 & 8.87e+00 & 9.98e-01 & 9.81e-01 & 1.02e+00 &    9.72e-01 &    1.00e+05 \\
+	L1\_S20x2  & 9.01e+02 & 1.10e+00 & 5.60e+01 & 7.66e+01 & 6.75e+00 &    1.05e+00 &    6.00e+02 \\
+	L1\_S20x5  & 2.16e+03 & 8.05e-01 & 1.77e+01 & 2.35e+01 & 6.57e+00 &    1.02e+00 &    0.00e+00 \\
+	L1\_S20x10 & 4.26e+03 & 1.69e+00 & 7.63e-01 & 5.30e-01 & 9.62e-01 &    1.01e+00 &    3.63e+04 \\
+	L1\_S30x2  & 1.95e+03 & 1.53e+00 & 2.90e+00 & 3.32e+00 & 2.33e+00 &    1.02e+00 &    5.05e+04 \\
+	L1\_S30x5  & 4.74e+03 & 2.50e+00 & 8.56e-01 & 8.30e-02 & 1.25e+00 &    1.01e+00 &    1.00e+05 \\
+	L1\_S30x10 & 9.39e+03 & 4.09e+00 & 9.63e-01 & 8.15e-01 & 1.11e+00 &    9.94e-01 &    1.00e+05 \\
+	\bottomrule
+\end{tabular}
+\caption{ECNN - 2D-Test Data Error Summary}
+\end{table}
+
+\begin{table}[H]
+\begin{tabular}{lrrrrrrr}
+	\toprule
+	{} &     Size &   RMSE h &   RMSE u &  RMSE u0 &  RMSE u1 &  RMSE alpha &  Num NegDef \\
+	NetID     &          &          &          &          &          &             &             \\
+	\midrule
+	L1\_S15x2  & 5.26e+02 & 1.34e+00 & 3.08e+00 & 3.83e+00 & 1.91e+00 &    1.01e+00 &    1.00e+04 \\
+	L1\_S15x5  & 1.25e+03 & 2.51e+00 & 2.75e+02 & 2.84e+02 & 2.66e+02 &    9.61e-01 &    0.00e+00 \\
+	L1\_S15x10 & 2.45e+03 & 8.87e+00 & 9.98e-01 & 9.81e-01 & 1.02e+00 &    9.64e-01 &    1.00e+04 \\
+	L1\_S20x2  & 9.01e+02 & 1.10e+00 & 5.60e+01 & 7.66e+01 & 6.75e+00 &    1.04e+00 &    5.80e+01 \\
+	L1\_S20x5  & 2.16e+03 & 8.05e-01 & 1.77e+01 & 2.35e+01 & 6.57e+00 &    1.02e+00 &    0.00e+00 \\
+	L1\_S20x10 & 4.26e+03 & 1.69e+00 & 7.63e-01 & 5.30e-01 & 9.62e-01 &    9.96e-01 &    3.63e+03 \\
+	L1\_S30x2  & 1.95e+03 & 1.53e+00 & 2.90e+00 & 3.32e+00 & 2.33e+00 &    1.01e+00 &    5.05e+03 \\
+	L1\_S30x5  & 4.74e+03 & 2.50e+00 & 8.55e-01 & 8.30e-02 & 1.25e+00 &    1.00e+00 &    1.00e+04 \\
+	L1\_S30x10 & 9.39e+03 & 4.09e+00 & 9.63e-01 & 8.15e-01 & 1.11e+00 &    9.85e-01 &    1.00e+04 \\
 	\bottomrule
 \end{tabular}
 
-\begin{tabular}{lrrrrrrrrr}
+\caption{ECNN Train Data Error Summary}
+\end{table}
+
+\begin{table}[H]
+\begin{tabular}{lrrrrrrr}
 	\toprule
-	NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
+	{} &     Size &   RMSE h &   RMSE u &  RMSE u0 &  RMSE u1 &  RMSE alpha &  Num NegDef \\
+	NetID     &          &          &          &          &          &             &             \\
 	\midrule
-	Size       &  5.26e+02 &  1.25e+03 &   2.45e+03 &  9.01e+02 &  2.16e+03 &   4.26e+03 &  1.95e+03 &  4.74e+03 &   9.39e+03 \\
-	RMSE h     &  1.34e+00 &  2.51e+00 &   8.87e+00 &  1.10e+00 &  8.05e-01 &   1.69e+00 &  1.53e+00 &  2.50e+00 &   4.09e+00 \\
-	RMSE u     &  3.08e+00 &  2.75e+02 &   9.98e-01 &  5.60e+01 &  1.77e+01 &   7.63e-01 &  2.90e+00 &  8.55e-01 &   9.63e-01 \\
-	RMSE u0    &  3.83e+00 &  2.84e+02 &   9.81e-01 &  7.66e+01 &  2.35e+01 &   5.30e-01 &  3.32e+00 &  8.30e-02 &   8.15e-01 \\
-	RMSE u1    &  1.91e+00 &  2.66e+02 &   1.02e+00 &  6.75e+00 &  6.57e+00 &   9.62e-01 &  2.33e+00 &  1.25e+00 &   1.11e+00 \\
-	RMSE alpha &  1.01e+00 &  9.61e-01 &   9.64e-01 &  1.04e+00 &  1.02e+00 &   9.96e-01 &  1.01e+00 &  1.00e+00 &   9.85e-01 \\
-	Num NegDef &  1.00e+04 &  0.00e+00 &   1.00e+04 &  5.80e+01 &  0.00e+00 &   3.63e+03 &  5.05e+03 &  1.00e+04 &   1.00e+04 \\
+	L1\_S15x2  & 5.00e+00 & 8.37e-01 & 7.44e-01 & 4.27e-08 & 1.09e+00 &    1.00e+00 &    0.00e+00 \\
+	L1\_S15x5  & 5.00e+00 & 5.79e-01 & 6.63e-01 & 4.53e-08 & 9.69e-01 &    1.00e+00 &    0.00e+00 \\
+	L1\_S15x10 & 5.00e+00 & 1.02e+00 & 5.35e-01 & 4.00e-08 & 7.82e-01 &    9.93e-01 &    0.00e+00 \\
+	L1\_S20x2  & 5.00e+00 & 9.43e-01 & 6.10e-01 & 4.22e-08 & 8.91e-01 &    9.97e-01 &    0.00e+00 \\
+	L1\_S20x5  & 5.00e+00 & 1.12e+00 & 7.28e-01 & 4.41e-08 & 1.06e+00 &    1.00e+00 &    0.00e+00 \\
+	L1\_S20x10 & 5.00e+00 & 6.69e+00 & 1.18e+00 & 1.02e-07 & 1.72e+00 &    1.03e+00 &    0.00e+00 \\
+	L1\_S30x2  & 5.00e+00 & 1.47e+00 & 7.96e-01 & 4.71e-08 & 1.16e+00 &    1.00e+00 &    0.00e+00 \\
+	L1\_S30x5  & 5.00e+00 & 2.97e+00 & 7.44e-01 & 4.08e-08 & 1.09e+00 &    1.00e+00 &    0.00e+00 \\
+	L1\_S30x10 & 5.00e+00 & 1.98e+00 & 6.65e-01 & 4.73e-08 & 9.71e-01 &    9.98e-01 &    0.00e+00 \\
+	\bottomrule
+\end{tabular}
+\caption{ICNN 2D-Test Data Error Summary}
+\end{table}
+
+\begin{table}[H]
+	
+\begin{tabular}{lrrrrrrr}
+	\toprule
+	{} &     Size &   RMSE h &   RMSE u &  RMSE u0 &  RMSE u1 &  RMSE alpha &  Num NegDef \\
+	NetID     &          &          &          &          &          &             &             \\
+	\midrule
+	L1\_S15x2  & 5.00e+00 & 8.37e-01 & 7.44e-01 & 4.24e-08 & 1.09e+00 &    9.93e-01 &    0.00e+00 \\
+	L1\_S15x5  & 5.00e+00 & 5.79e-01 & 6.63e-01 & 4.61e-08 & 9.69e-01 &    9.92e-01 &    0.00e+00 \\
+	L1\_S15x10 & 5.00e+00 & 1.02e+00 & 5.35e-01 & 4.04e-08 & 7.82e-01 &    9.84e-01 &    0.00e+00 \\
+	L1\_S20x2  & 5.00e+00 & 9.43e-01 & 6.10e-01 & 4.30e-08 & 8.91e-01 &    9.88e-01 &    0.00e+00 \\
+	L1\_S20x5  & 5.00e+00 & 1.12e+00 & 7.28e-01 & 4.38e-08 & 1.06e+00 &    9.95e-01 &    0.00e+00 \\
+	L1\_S20x10 & 5.00e+00 & 6.69e+00 & 1.18e+00 & 1.04e-07 & 1.72e+00 &    1.03e+00 &    0.00e+00 \\
+	L1\_S30x2  & 5.00e+00 & 1.47e+00 & 7.96e-01 & 4.71e-08 & 1.16e+00 &    9.96e-01 &    0.00e+00 \\
+	L1\_S30x5  & 5.00e+00 & 2.97e+00 & 7.44e-01 & 4.10e-08 & 1.09e+00 &    9.93e-01 &    0.00e+00 \\
+	L1\_S30x10 & 5.00e+00 & 1.98e+00 & 6.65e-01 & 4.74e-08 & 9.71e-01 &    9.90e-01 &    0.00e+00 \\
 	\bottomrule
 \end{tabular}
 
-
-\begin{tabular}{lrrrrrrrrr}
-	\toprule
-	NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
-	\midrule
-	Size       &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 \\
-	RMSE h     &  8.37e-01 &  5.79e-01 &   1.02e+00 &  9.43e-01 &  1.12e+00 &   6.69e+00 &  1.47e+00 &  2.97e+00 &   1.98e+00 \\
-	RMSE u     &  7.44e-01 &  6.63e-01 &   5.35e-01 &  6.10e-01 &  7.28e-01 &   1.18e+00 &  7.96e-01 &  7.44e-01 &   6.65e-01 \\
-	RMSE u0    &  4.27e-08 &  4.53e-08 &   4.00e-08 &  4.22e-08 &  4.41e-08 &   1.02e-07 &  4.71e-08 &  4.08e-08 &   4.73e-08 \\
-	RMSE u1    &  1.09e+00 &  9.69e-01 &   7.82e-01 &  8.91e-01 &  1.06e+00 &   1.72e+00 &  1.16e+00 &  1.09e+00 &   9.71e-01 \\
-	RMSE alpha &  1.00e+00 &  1.00e+00 &   9.93e-01 &  9.97e-01 &  1.00e+00 &   1.03e+00 &  1.00e+00 &  1.00e+00 &   9.98e-01 \\
-	Num NegDef &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 \\
-	\bottomrule
-\end{tabular}
-
-\begin{tabular}{lrrrrrrrrr}
-\toprule
-NetID &  L1\_S15x2 &  L1\_S15x5 &  L1\_S15x10 &  L1\_S20x2 &  L1\_S20x5 &  L1\_S20x10 &  L1\_S30x2 &  L1\_S30x5 &  L1\_S30x10 \\
-\midrule
-Size       &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 &  5.00e+00 &  5.00e+00 &   5.00e+00 \\
-RMSE h     &  8.37e-01 &  5.79e-01 &   1.02e+00 &  9.43e-01 &  1.12e+00 &   6.69e+00 &  1.47e+00 &  2.97e+00 &   1.98e+00 \\
-RMSE u     &  7.44e-01 &  6.63e-01 &   5.35e-01 &  6.10e-01 &  7.28e-01 &   1.18e+00 &  7.96e-01 &  7.44e-01 &   6.65e-01 \\
-RMSE u0    &  4.24e-08 &  4.61e-08 &   4.04e-08 &  4.30e-08 &  4.38e-08 &   1.04e-07 &  4.71e-08 &  4.10e-08 &   4.74e-08 \\
-RMSE u1    &  1.09e+00 &  9.69e-01 &   7.82e-01 &  8.91e-01 &  1.06e+00 &   1.72e+00 &  1.16e+00 &  1.09e+00 &   9.71e-01 \\
-RMSE alpha &  9.93e-01 &  9.92e-01 &   9.84e-01 &  9.88e-01 &  9.95e-01 &   1.03e+00 &  9.96e-01 &  9.93e-01 &   9.90e-01 \\
-Num NegDef &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 &  0.00e+00 &  0.00e+00 &   0.00e+00 \\
-\bottomrule
-\end{tabular}
+\caption{ICNN Train Data Error Summary}
+\end{table}
 
 
 
