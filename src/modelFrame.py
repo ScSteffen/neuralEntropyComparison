@@ -18,6 +18,7 @@ import numpy as np
 from src.utils import dualityTools
 
 #DataFrame manipulattion stuff
+import matplotlib.pyplot as plt 
 import pandas as pd 
 import pickle 
 from tabulate import tabulate 
@@ -79,7 +80,7 @@ class ModelFrame:
         return 0
 
     def loadWeights(self):
-        usedFileName = self.saveFolder + '/model.h5'
+        usedFileName = self.saveFolder + '/best_model.h5'
         self.model.load_weights(usedFileName)
         print("Model loaded from file ")
         return 0
@@ -189,6 +190,30 @@ class ModelFrame:
     def errorAnalysis(self,trainData,testData = None,datID_train = None,datID_test = None):
         #this is written for N = 1 only right now 
         if self.N == 1:
+            
+            
+            history_path = 'models/losscombi_1/'+'width'+str(self.nWidth)+'_depth'+str(self.nLength)+'/'+\
+            str(self.model.arch)+'/'+'historyLogs/'+'history_001_.csv'
+            history_frame = pd.read_csv(history_path)
+            fig,ax = plt.subplots(1)
+            #ax.plot(history_frame['epoch'],history_frame['output_loss_1'],label = 'Entropy')
+            for i in range(3): 
+                ax.plot(history_frame['epoch'],history_frame['output_'+str(i+1)+'_loss'],label = 'Loss '+str(i+1))
+            ax.set_yscale('log')
+            ax.set_xlabel('Num Epochs')
+            ax.set_ylabel('Errors')
+            ax.set_title('Loss Curves for Model '+self.model.arch+'-' + str(self.nWidth)+'by'+str(self.nLength))
+            ax.legend(loc = 'upper left',bbox_to_anchor = (1.00,0.75))
+            fig.savefig('analysis/figures/'+self.model.arch+str(self.nWidth)+'by'+str(self.nLength)+'.eps',\
+                        bbox_inches ='tight')
+            """
+            ax.title('History')
+            #ax.set_xscale('log')
+            ax.set_yscale('log')
+            ax.plot(history_frame[]
+            print(history_frame)
+            """
+            
             
             train_df_path = 'analysis/raw/results_'+self.model.arch+'_train_'+datID_train + '.pickle'
             test_df_path = 'analysis/raw/results_'+self.model.arch+'_test_'+datID_test+'.pickle'

@@ -45,7 +45,7 @@ def main():
                       metavar="DEGREE")
     parser.add_option("-e", "--evalutation", dest="evaluation", default=1,
                       help="evaluation and error analysis", metavar="EVALUATE")
-    parser.add_option("-l", "--load", dest="load", default=0,
+    parser.add_option("-l", "--load", dest="load", default=1,
                       help="0: Dont load weights\n1:Load weights", metavar="LOAD")
     parser.add_option("-o", "--lossCombi", dest="losses", default=1,
                       help="combination of model losses (objective functions): \n"
@@ -136,7 +136,7 @@ def main():
 
     modelList = []  # list of models
 
-    for width_idx in [15, 20, 30]:
+    for width_idx in [15]:
         for depth_idx in [2, 5, 10]:
             if options.architecture == 0:
                 modelList.append(
@@ -191,18 +191,18 @@ def main():
 
 if __name__ == '__main__':
     
-    tex_dataframe = True 
+    tex_dataframe = True
     
     new_dataframe = False
     
-    run_main = False 
+    run_main = False
     
     if new_dataframe == True:
         datID = '10'
 
-        netNames = ['L1_S15x2','L1_S15x5','L1_S15x10',\
-                    'L1_S20x2','L1_S20x5','L1_S20x10',\
-                    'L1_S30x2','L1_S30x5','L1_S30x10']
+        netNames = ['L1_S15x2','L1_S15x5','L1_S15x10']
+                    #'L1_S20x2','L1_S20x5','L1_S20x10',\
+                    #'L1_S30x2','L1_S30x5','L1_S30x10']
         
         deg = 1
         AT = AnalysisTools('M_N')
@@ -212,9 +212,9 @@ if __name__ == '__main__':
                 AT.newDF(N = deg,domain = domain,datID = datID,method = method,saveNames = netNames)
            
     if tex_dataframe:
-        netNames = ['L1_S15x2','L1_S15x5','L1_S15x10',\
-                    'L1_S20x2','L1_S20x5','L1_S20x10',\
-                    'L1_S30x2','L1_S30x5','L1_S30x10']
+        netNames = ['L1_S15x2','L1_S15x5','L1_S15x10']
+                    #'L1_S20x2','L1_S20x5','L1_S20x10',\
+                    #'L1_S30x2','L1_S30x5','L1_S30x10']
         
         for method in ['ecnn','icnn']:
                 
