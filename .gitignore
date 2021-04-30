@@ -13,6 +13,11 @@ python/legacyCode/models/*
 
 # Data
 *.csv
+*.aux
+*.out
+*.pdf
+*.synctex.gz
+*.toc
 
 # images
 *.png
