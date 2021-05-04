@@ -30,7 +30,7 @@ This callback needs to be moved but is useful for hitting a certain threshold
 
 class ModelFrame:
 
-    def __init__(self, architecture=0, shapeTuple=(20, 5), lossChoices=0, inputDim=1, quad=None):
+    def __init__(self, architecture=0, shapeTuple=(20, 5), lossChoices=1, inputDim=1, quad=None):
         """constructor"""
 
         """
