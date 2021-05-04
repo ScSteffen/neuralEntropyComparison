@@ -91,12 +91,10 @@ class ModelFrame:
 
         u_train, alpha_train, h_train, hess_train = trainData
 
-        ### TODO
-        #   @WILL
         if curr == 0:
 
             # We only use this at the moment
-            num_epochs = int(1.5 * (1e+04))
+            num_epochs = int(1.5 * 1e+04)
             initial_lr = float(1e-3)
             drop_rate = (num_epochs / 3)
             stop_tol = 1e-7
@@ -106,7 +104,7 @@ class ModelFrame:
 
         elif curr == 1:
 
-            num_epochs = int(1.5 * (1e+04))
+            num_epochs = int(1.5 * 1e+04)
             initial_lr = float(1e-3)
             drop_rate = (num_epochs / 3)
             stop_tol = 1e-7
@@ -116,7 +114,7 @@ class ModelFrame:
 
         elif curr == 2:
 
-            num_epochs = int(1.5 * (1e+04))
+            num_epochs = int(1.5 * 1e+04)
             initial_lr = float(1e-3)
             drop_rate = (num_epochs / 3)
             stop_tol = 1e-7
@@ -132,23 +130,24 @@ class ModelFrame:
 
             # this callback good to go
 
+        print(self.lossChoices)
         LR = LearningRateScheduler(step_decay)
 
-        MC = ModelCheckpoint(self.saveFolder + '/best_model.h5', \
-                             monitor='val_output_' + str(self.lossChoices) + '_loss', \
-                             save_best_only=True, \
-                             save_weights_only=False, \
+        MC = ModelCheckpoint(self.saveFolder + '/best_model.h5',
+                             monitor='val_output_' + str(self.lossChoices) + '_loss',
+                             save_best_only=True,
+                             save_weights_only=False,
                              mode='min', verbose=1)
 
         HW = HaltWhen('val_output_' + str(self.lossChoices) + '_loss', stop_tol)
 
-        ES = EarlyStopping(monitor='val_output_' + str(self.lossChoices) + '_loss', mode='min', \
-                           verbose=1, patience=mt_patience, \
+        ES = EarlyStopping(monitor='val_output_' + str(self.lossChoices) + '_loss', mode='min',
+                           verbose=1, patience=mt_patience,
                            min_delta=1e-8)
 
         CSV_Logger = self.createCSVLoggerCallback()
 
-        callback_list = [MC, ES, HW, LR, CSV_Logger]
+        callback_list = [MC, HW, LR, CSV_Logger]
 
         """
         Model bool / string to switch training for Steffen or Will
